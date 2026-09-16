@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f4f96">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<title>決算帳 スマホ入力</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP","Meiryo",sans-serif;font-size:16px;color:#1d2733;background:#eef2f7;display:flex;flex-direction:column;overscroll-behavior:none}
+header{background:linear-gradient(#2f7fd0,#0f4f96);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;display:flex;align-items:center;gap:10px;flex:none}
+header .ti{font-weight:bold;font-size:17px}
+header .st{margin-left:auto;font-size:12px;background:rgba(255,255,255,.18);padding:3px 9px;border-radius:11px;white-space:nowrap}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 20px}
+nav{display:flex;background:#fff;border-top:1px solid #c7d4e2;flex:none;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;font:inherit;font-size:12px;color:#5a6b7d;padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button .i{font-size:21px;line-height:1}
+nav button.on{color:#0f4f96;font-weight:bold;box-shadow:inset 0 3px 0 #2f7fd0}
+.card{background:#fff;border:1px solid #d5dfea;border-radius:10px;padding:13px;margin-bottom:12px}
+.card h2{margin:0 0 9px;font-size:14px;color:#0f4f96;display:flex;align-items:center;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid #b9c8dc;background:#f7fbff;border-radius:17px;padding:8px 13px;font-size:14px;line-height:1.2}
+.chip.on{background:#2f7fd0;border-color:#2f7fd0;color:#fff;font-weight:bold}
+.tpl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tpl button{border:1px solid #b9c8dc;background:#fff;border-radius:9px;padding:12px 8px;font:inherit;font-size:14.5px;line-height:1.25;text-align:left;min-height:52px}
+.tpl button.on{border-color:#2f7fd0;background:#e9f3ff;box-shadow:0 0 0 2px #bcd9f7}
+.tpl button small{display:block;color:#5a6b7d;font-size:11.5px;margin-top:3px}
+label.l{display:block;font-size:12.5px;color:#5a6b7d;margin:0 0 4px}
+input,select,textarea{font:inherit;width:100%;border:1px solid #b9c8dc;border-radius:8px;padding:11px;background:#fff;color:#1d2733}
+input.amt{font-size:30px;text-align:right;font-weight:bold;letter-spacing:.03em;padding:8px 12px}
+.row2{display:flex;gap:8px}
+.row2>*{flex:1;min-width:0}
+.big{width:100%;border:0;border-radius:10px;background:#1a7a3c;color:#fff;font:inherit;font-size:18px;font-weight:bold;padding:15px;margin-top:4px}
+.big:disabled{background:#b6c2cd}
+.big.blue{background:#0f4f96}
+.big.gray{background:#5a6b7d}
+.sub{width:100%;border:1px solid #b9c8dc;border-radius:9px;background:#fff;font:inherit;padding:11px;margin-top:8px}
+.sub.dz{border-color:#d9a2a2;color:#b52020}
+.note{color:#5a6b7d;font-size:12.5px;line-height:1.65}
+.prev{background:#f2f7fd;border:1px solid #b9c8dc;border-radius:8px;padding:9px 11px;font-size:13.5px;margin-bottom:10px}
+.prev b{color:#0f4f96}
+.item{display:flex;gap:9px;align-items:center;padding:10px 2px;border-bottom:1px solid #e6ecf3}
+.item .d{font-size:12px;color:#5a6b7d;width:42px;flex:none;text-align:center}
+.item .m{flex:1;min-width:0;line-height:1.35}
+.item .m b{font-size:14.5px;font-weight:normal}
+.item .m small{display:block;color:#5a6b7d;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .a{font-weight:bold;white-space:nowrap;font-size:15px}
+.item .a.in{color:#1a7a3c}
+.item .x{border:0;background:#f0f3f7;color:#8a96a3;border-radius:7px;width:32px;height:32px;font-size:17px;flex:none}
+.item.sent{opacity:.55}
+.mtot{display:flex;justify-content:space-between;background:#f2f7fd;border-radius:8px;padding:9px 11px;font-size:13.5px;margin-bottom:8px}
+.mtot b{font-size:15px}
+.empty{text-align:center;color:#8a96a3;padding:30px 0;font-size:14px}
+.ok{background:#eaf7ee;border-color:#a9d6b8;color:#14602f}
+.warn{background:#fffaef;border-color:#e2c88a}
+#toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:#1d2733;color:#fff;padding:11px 20px;border-radius:22px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:9;max-width:88%;text-align:center}
+#toast.on{opacity:.95}
+.badge{display:inline-block;background:#e8f0f9;color:#0f4f96;border-radius:4px;padding:1px 7px;font-size:11.5px;margin-left:5px}
+.badge.g{background:#eaf7ee;color:#14602f}
+textarea.out{height:120px;font-size:11px;font-family:ui-monospace,monospace;white-space:pre;overflow-x:auto}
+</style>
+</head>
+<body>
+<header><span class="ti">決算帳 スマホ入力</span><span class="st" id="hst"></span></header>
+<main id="main"></main>
+<nav>
+  <button data-v="entry" class="on"><span class="i">✏️</span>入力</button>
+  <button data-v="list"><span class="i">📋</span>一覧</button>
+  <button data-v="send"><span class="i">📤</span>PCへ送る</button>
+  <button data-v="conf"><span class="i">⚙️</span>設定</button>
+</nav>
+<div id="toast"></div>
+<script>
+'use strict';
+const LS = 'kessanPhone.v1';
+const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => (Math.round(+n || 0)).toLocaleString('ja-JP');
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const md = s => { const p = s.split('-'); return +p[1] + '/' + +p[2]; };
+
+/* ---- よく使う取引（借方・貸方はPC版の科目名と同じにすること） ---- */
+const PRESETS = {
+  delivery: { label:'フードデリバリー', tpls:[
+    { n:'報酬 入金', dr:'普通預金', cr:'売上高', memo:'配達報酬', kind:'in' },
+    { n:'ガソリン', dr:'車両費', cr:'現金', memo:'ガソリン' },
+    { n:'駐輪・駐車場', dr:'車両費', cr:'現金', memo:'駐輪場' },
+    { n:'修理・オイル', dr:'修繕費', cr:'現金', memo:'原付 修理' },
+    { n:'配達用品', dr:'消耗品費', cr:'現金', memo:'配達用品' },
+    { n:'雨具・手袋', dr:'消耗品費', cr:'現金', memo:'雨具・手袋' },
+    { n:'スマホ代', dr:'通信費', cr:'普通預金', memo:'スマホ代' },
+    { n:'保険', dr:'損害保険料', cr:'普通預金', memo:'自賠責・任意保険' },
+    { n:'税金(原付)', dr:'租税公課', cr:'現金', memo:'軽自動車税' },
+    { n:'電車・高速', dr:'旅費交通費', cr:'現金', memo:'交通費' },
+    { n:'ATM引出', dr:'現金', cr:'普通預金', memo:'ATM引出', fix:1 },
+    { n:'生活費', dr:'事業主貸', cr:'普通預金', memo:'生活費', fix:1 },
+  ]},
+  kenchiku: { label:'建築・内装', tpls:[
+    { n:'工事代 請求', dr:'売掛金', cr:'売上高', memo:'工事代 請求', kind:'in', fix:1 },
+    { n:'工事代 入金', dr:'普通預金', cr:'売掛金', memo:'工事代 入金', kind:'in', fix:1 },
+    { n:'材料', dr:'仕入高', cr:'現金', memo:'材料' },
+    { n:'外注費', dr:'外注工賃', cr:'普通預金', memo:'外注費' },
+    { n:'工具・消耗品', dr:'消耗品費', cr:'現金', memo:'工具・消耗品' },
+    { n:'作業着', dr:'消耗品費', cr:'現金', memo:'作業着' },
+    { n:'ガソリン', dr:'車両費', cr:'現金', memo:'ガソリン' },
+    { n:'高速・駐車場', dr:'旅費交通費', cr:'現金', memo:'高速代・駐車場' },
+    { n:'スマホ代', dr:'通信費', cr:'普通預金', memo:'スマホ代' },
+    { n:'振込手数料', dr:'支払手数料', cr:'普通預金', memo:'振込手数料' },
+    { n:'ATM引出', dr:'現金', cr:'普通預金', memo:'ATM引出', fix:1 },
+    { n:'生活費', dr:'事業主貸', cr:'普通預金', memo:'生活費', fix:1 },
+  ]},
+};
+/* 支払方法（経費のとき貸方を差し替え／入金のとき借方を差し替え） */
+const PAYS = [ ['現金','現金'], ['口座','普通預金'], ['カード','未払金'], ['個人のお金','事業主借'] ];
+const INS  = [ ['口座','普通預金'], ['現金','現金'], ['未入金','売掛金'] ];
+
+/* ---- データ ---- */
+let D = load();
+/* このスマホで保存が効くか（開き方によっては使えないことがある） */
+function storageOK(){
+  try { localStorage.setItem('__chk', '1'); const v = localStorage.getItem('__chk') === '1'; localStorage.removeItem('__chk'); return v; }
+  catch(e){ return false; }
+}
+const canSave = storageOK();
+function load(){
+  try { const o = JSON.parse(localStorage.getItem(LS)); if(o && o.entries) return o; } catch(e){}
+  return { preset:'delivery', entries:[], lastSent:null, opens:0 };
+}
+function save(){ try { localStorage.setItem(LS, JSON.stringify(D)); } catch(e){ toast('保存できませんでした', 1); } }
+const unsent = () => D.entries.filter(e => !e.sent);
+function toast(m, warn){ const t = $('#toast'); t.textContent = m; t.style.background = warn ? '#b52020' : '#1d2733'; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2200); }
+
+/* ---- 入力画面の状態 ---- */
+let ui = { view:'entry', tpl:0, pay:0, date:today() };
+
+const VIEWS = {};
+VIEWS.entry = () => {
+  const ts = PRESETS[D.preset].tpls, t = ts[ui.tpl];
+  const isIn = t.kind === 'in';
+  const opts = t.fix ? null : (isIn ? INS : PAYS);
+  const cur = opts ? opts[Math.min(ui.pay, opts.length - 1)] : null;
+  const dr = isIn && cur ? cur[1] : t.dr;
+  const cr = !isIn && cur ? cur[1] : t.cr;
+  return `
+  <div class="card"><h2>① 何の取引ですか？</h2>
+    <div class="tpl">${ts.map((x, i) => `<button data-t="${i}" class="${i === ui.tpl ? 'on' : ''}">${esc(x.n)}<small>${esc(x.dr)} / ${esc(x.cr)}</small></button>`).join('')}</div>
+  </div>
+  ${opts ? `<div class="card"><h2>② ${isIn ? 'どこに入りましたか？' : 'どうやって払いましたか？'}</h2>
+    <div class="chips">${opts.map((p, i) => `<button class="chip ${i === Math.min(ui.pay, opts.length-1) ? 'on' : ''}" data-p="${i}">${esc(p[0])}</button>`).join('')}</div></div>` : ''}
+  <div class="card"><h2>${opts ? '③' : '②'} 金額と日付</h2>
+    <label class="l">金額（円）</label>
+    <input class="amt" id="amt" type="tel" inputmode="numeric" placeholder="0">
+    <div class="row2" style="margin-top:10px">
+      <div><label class="l">日付</label><input type="date" id="date" value="${ui.date}"></div>
+      <div><label class="l">　</label><button class="sub" style="margin:0" id="btoday">今日にする</button></div>
+    </div>
+    <div style="margin-top:10px"><label class="l">メモ（お店の名前など・空欄OK）</label>
+      <input id="memo" value="${esc(t.memo || '')}" placeholder="例）○○スタンド"></div>
+  </div>
+  <div class="prev">これで登録します　→　<b>${esc(dr)}</b> ／ <b>${esc(cr)}</b>　<span class="note">（${isIn ? '入金' : '支払'}）</span></div>
+  <button class="big" id="add">この内容で登録する</button>
+  <p class="note" style="text-align:center;margin:12px 0 0">登録した分は「一覧」で確認・削除できます。<br>あとで「PCへ送る」からパソコンの決算帳に取り込みます。</p>`;
+};
+VIEWS.entry_after = () => {
+  $$('[data-t]').forEach(b => b.onclick = () => { ui.tpl = +b.dataset.t; ui.pay = 0; ui.focusAmt = true; render(true); });
+  $$('[data-p]').forEach(b => b.onclick = () => { ui.pay = +b.dataset.p; ui.focusAmt = true; render(true); });
+  $('#date').onchange = e => { ui.date = e.target.value || today(); };
+  $('#btoday').onclick = () => { ui.date = today(); $('#date').value = ui.date; toast('今日の日付にしました'); };
+  $('#add').onclick = addEntry;
+  $('#amt').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addEntry(); } });
+  if(ui.focusAmt){ // 取引を選んだら金額欄まで自動で送る（ボタンが多いので下に隠れるため）
+    ui.focusAmt = false; const a = $('#amt');
+    a.closest('.card').scrollIntoView({ block:'start', behavior:'smooth' });
+    setTimeout(() => { a.focus(); a.select(); }, 260);
+  }
+};
+function addEntry(){
+  const ts = PRESETS[D.preset].tpls, t = ts[ui.tpl], isIn = t.kind === 'in';
+  const opts = t.fix ? null : (isIn ? INS : PAYS);
+  const cur = opts ? opts[Math.min(ui.pay, opts.length - 1)] : null;
+  const amt = Math.round(Number(String($('#amt').value).replace(/[^0-9.]/g, '')));
+  if(!(amt > 0)) return toast('金額を入れてください', 1);
+  const date = $('#date').value || today();
+  D.entries.push({ id:uid(), date, dr: isIn && cur ? cur[1] : t.dr, cr: !isIn && cur ? cur[1] : t.cr,
+                   amt, memo: $('#memo').value.trim(), kind: isIn ? 'in' : 'out', at:new Date().toISOString() });
+  save();
+  toast(`登録しました　${fmt(amt)}円`);
+  ui.focusAmt = false;
+  render();
+}
+
+VIEWS.list = () => {
+  const es = [...D.entries].sort((a, b) => b.date === a.date ? (b.at || '').localeCompare(a.at || '') : b.date.localeCompare(a.date));
+  const m = today().slice(0, 7);
+  const cur = es.filter(e => e.date.slice(0, 7) === m);
+  const inc = cur.filter(e => e.kind === 'in').reduce((s, e) => s + e.amt, 0);
+  const out = cur.filter(e => e.kind !== 'in').reduce((s, e) => s + e.amt, 0);
+  return `
+  <div class="mtot"><span>今月（${+m.slice(5)}月）の入力</span><span>入金 <b style="color:#1a7a3c">${fmt(inc)}</b> ／ 支払 <b>${fmt(out)}</b> 円</span></div>
+  <div class="card">${es.length ? es.map(e => `
+    <div class="item ${e.sent ? 'sent' : ''}">
+      <span class="d">${md(e.date)}</span>
+      <span class="m"><b>${esc(e.kind === 'in' ? e.cr : e.dr)}</b>${e.sent ? '<span class="badge g">送信済</span>' : ''}<small>${esc(e.memo || '')}${e.memo ? '　' : ''}${esc(e.kind === 'in' ? e.dr : e.cr)}</small></span>
+      <span class="a ${e.kind === 'in' ? 'in' : ''}">${e.kind === 'in' ? '+' : '−'}${fmt(e.amt)}</span>
+      <button class="x" data-del="${e.id}">×</button>
+    </div>`).join('') : '<div class="empty">まだ入力がありません</div>'}
+  </div>
+  ${es.length ? `<p class="note">合計 ${es.length} 件（未送信 ${unsent().length} 件）。<br>× で1件削除できます。送信済みの分をまとめて消すときは「PCへ送る」画面から。</p>` : ''}`;
+};
+VIEWS.list_after = () => {
+  $$('[data-del]').forEach(b => b.onclick = () => {
+    const e = D.entries.find(x => x.id === b.dataset.del); if(!e) return;
+    if(!confirm(`${md(e.date)}　${e.memo || (e.kind === 'in' ? e.cr : e.dr)}　${fmt(e.amt)}円\nこの1件を削除しますか？`)) return;
+    D.entries = D.entries.filter(x => x.id !== b.dataset.del); save(); render(); toast('削除しました');
+  });
+};
+
+function payload(list){
+  return JSON.stringify({ app:'kessan-phone', ver:1, exportedAt:new Date().toISOString(),
+    entries:list.map(e => ({ id:e.id, date:e.date, dr:e.dr, cr:e.cr, amt:e.amt, memo:e.memo })) });
+}
+VIEWS.send = () => {
+  const un = unsent(), sent = D.entries.length - un.length;
+  const fname = `スマホ入力_${today().replace(/-/g,'')}.json`;
+  return `
+  <div class="card ${un.length ? '' : 'ok'}"><h2>パソコンの決算帳に取り込む</h2>
+    ${un.length ? `<p style="margin:0 0 10px"><b style="font-size:19px">未送信 ${un.length} 件</b>　<span class="note">（${un[un.length-1] ? md(un.map(e=>e.date).sort()[0]) : ''} 〜 ${un.length ? md(un.map(e=>e.date).sort().slice(-1)[0]) : ''}）</span></p>
+    <button class="big blue" id="bshare">📤 送る（LINE・メール・ドライブ）</button>
+    <button class="sub" id="bfile">💾 ファイルに保存（${esc(fname)}）</button>
+    <button class="sub" id="bcopy">📋 文字をコピーする</button>
+    <p class="note" style="margin-top:10px">どれか1つでOKです。パソコンの決算帳を開き、左メニューの <b>「📱 スマホから取り込み」</b> でファイルを選ぶか、コピーした文字を貼り付けてください。</p>`
+    : '<p style="margin:0">未送信の入力はありません。</p>'}
+  </div>
+  ${un.length ? `<div class="card"><h2>送る中身（確認用）</h2><textarea class="out" id="out" readonly>${esc(payload(un))}</textarea></div>` : ''}
+  <div class="card"><h2>送ったあとの片付け</h2>
+    <p class="note" style="margin-top:0">パソコンに取り込めたことを確認してから、この2つを押してください。</p>
+    <button class="sub" id="bmark" ${un.length ? '' : 'disabled'}>✓ 未送信 ${un.length} 件を「送信済」にする</button>
+    <button class="sub dz" id="bclear" ${sent ? '' : 'disabled'}>🗑 送信済み ${sent} 件をこのスマホから削除</button>
+    <p class="note">※ 決算帳側は同じ入力を二重に取り込まないようになっているので、間違えて2回送っても増えません。</p>
+  </div>`;
+};
+VIEWS.send_after = () => {
+  const un = unsent(), data = payload(un), fname = `スマホ入力_${today().replace(/-/g,'')}.json`;
+  const dl = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type:'application/json' })); a.download = fname; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); };
+  const b = id => $('#' + id);
+  if(b('bshare')) b('bshare').onclick = async () => {
+    const file = new File([data], fname, { type:'application/json' });
+    try {
+      if(navigator.canShare && navigator.canShare({ files:[file] })) { await navigator.share({ files:[file], title:'決算帳 スマホ入力' }); return; }
+      if(navigator.share) { await navigator.share({ title:'決算帳 スマホ入力', text:data }); return; }
+      dl(); toast('共有に対応していないため保存しました');
+    } catch(e){ if(e && e.name !== 'AbortError') { dl(); toast('共有できないため保存しました'); } }
+  };
+  if(b('bfile')) b('bfile').onclick = () => { dl(); toast('保存しました'); };
+  if(b('bcopy')) b('bcopy').onclick = async () => {
+    try { await navigator.clipboard.writeText(data); toast('コピーしました'); }
+    catch(e){ const o = $('#out'); o.focus(); o.select(); document.execCommand('copy'); toast('コピーしました'); }
+  };
+  b('bmark').onclick = () => { if(!unsent().length) return; D.entries.forEach(e => e.sent = true); D.lastSent = new Date().toISOString(); save(); render(); toast('送信済みにしました'); };
+  b('bclear').onclick = () => {
+    const n = D.entries.filter(e => e.sent).length; if(!n) return;
+    if(!confirm(`送信済みの ${n} 件をこのスマホから削除します。\nパソコン側に取り込めているか確認しましたか？`)) return;
+    D.entries = D.entries.filter(e => !e.sent); save(); render(); toast('削除しました');
+  };
+};
+
+VIEWS.conf = () => `
+  <div class="card"><h2>業種（よく使う取引が変わります）</h2>
+    <div class="chips">${Object.entries(PRESETS).map(([k, p]) => `<button class="chip ${D.preset === k ? 'on' : ''}" data-pre="${k}">${esc(p.label)}</button>`).join('')}</div>
+  </div>
+  <div class="card"><h2>この画面をアプリのように使う</h2>
+    <p class="note" style="margin-top:0">Chromeの右上「⋮」→ <b>「ホーム画面に追加」</b> を押すと、アイコンから開けるようになります。<br>
+    インターネットにつながっていなくても入力できます（圏外でもOK）。</p>
+  </div>
+  <div class="card warn"><h2>⚠ データが消えないように</h2>
+    <p class="note" style="margin-top:0">入力した内容は<b>このスマホのブラウザの中だけ</b>に保存されています。<br>
+    ・ブラウザの「閲覧データの削除」をすると消えます<br>
+    ・機種変更では引き継がれません<br>
+    <b>週に1回くらい「PCへ送る」でパソコンに取り込んでおくと安心です。</b></p>
+  </div>
+  <div class="card ${D.opens >= 2 ? 'ok' : ''}"><h2>保存の確認</h2>
+    <p class="note" style="margin-top:0">このスマホで開いた回数：<b>${D.opens || 1} 回目</b><br>
+    ${D.opens >= 2 ? '<b style="color:#14602f">✓ 前回の記録が残っています。保存は正しく働いています。</b>'
+      : '一度このアプリを閉じて、開き直してください。ここが「2回目」になれば保存はできています。<br><b style="color:#b52020">何度開いても「1回目」のままなら、入力は保存されません。</b>開き方を変えてください。'}</p>
+  </div>
+  <div class="card"><h2>状況</h2>
+    <p class="note" style="margin-top:0">入力 ${D.entries.length} 件（未送信 ${unsent().length} 件）<br>
+    最後に送信済みにした日：${D.lastSent ? new Date(D.lastSent).toLocaleString('ja-JP') : 'まだありません'}</p>
+    <button class="sub dz" id="reset">すべての入力を消す</button>
+  </div>`;
+VIEWS.conf_after = () => {
+  $$('[data-pre]').forEach(b => b.onclick = () => { D.preset = b.dataset.pre; ui.tpl = 0; ui.pay = 0; save(); render(); toast(PRESETS[D.preset].label + 'にしました'); });
+  $('#reset').onclick = () => { if(!confirm('入力した内容をすべて消します。よろしいですか？')) return; D.entries = []; D.lastSent = null; save(); render(); toast('消しました'); };
+};
+
+function render(keepAmt){
+  const amt = keepAmt && $('#amt') ? $('#amt').value : null;
+  const warn = canSave ? '' : `<div class="card" style="background:#fdf4f3;border-color:#d9a2a2">
+    <h2 style="color:#b52020">⚠ この開き方では入力が保存できません</h2>
+    <p class="note" style="margin:0">いま入力しても、閉じると消えてしまいます。<b>開き方を変えてください</b>（説明書の16章を見てください）。</p></div>`;
+  $('#main').innerHTML = warn + VIEWS[ui.view]();
+  (VIEWS[ui.view + '_after'] || (() => {}))();
+  if(amt !== null && $('#amt')) $('#amt').value = amt;
+  const un = unsent().length;
+  $('#hst').textContent = un ? `未送信 ${un} 件` : (D.entries.length ? '送信済' : '入力なし');
+  $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === ui.view));
+  $('#main').scrollTop = 0;
+}
+$$('nav button').forEach(b => b.onclick = () => { ui.view = b.dataset.v; render(); });
+D.opens = (D.opens || 0) + 1; save(); // 開いた回数＝保存が効いているかの目印
+render();
+</script>
+<script>
+/* ホーム画面から開いたとき用（圏外でも動くように、ブラウザに保存しておく） */
+if(location.protocol.startsWith('http') && 'serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "決算帳 スマホ入力",
+  "short_name": "決算帳入力",
+  "description": "配達中・現場で売上や経費をその場で入力し、あとでパソコンの決算帳に取り込むためのアプリ",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef2f7",
+  "theme_color": "#0f4f96",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
