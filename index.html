@@ -61,6 +61,10 @@ input.amt{font-size:30px;text-align:right;font-weight:bold;letter-spacing:.03em;
 #toast.on{opacity:.95}
 .badge{display:inline-block;background:#e8f0f9;color:#0f4f96;border-radius:4px;padding:1px 7px;font-size:11.5px;margin-left:5px}
 .badge.g{background:#eaf7ee;color:#14602f}
+.qsend{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0f4f96;color:#fff;border-radius:10px;padding:8px 8px 8px 14px;margin-bottom:12px}
+.qsend b{font-size:18px}
+.qsend button{border:0;border-radius:8px;background:#fff;color:#0f4f96;font:inherit;font-weight:bold;padding:10px 16px}
+header .st{cursor:pointer}
 textarea.out{height:120px;font-size:11px;font-family:ui-monospace,monospace;white-space:pre;overflow-x:auto}
 </style>
 </head>
@@ -147,7 +151,9 @@ VIEWS.entry = () => {
   const cur = opts ? opts[Math.min(ui.pay, opts.length - 1)] : null;
   const dr = isIn && cur ? cur[1] : t.dr;
   const cr = !isIn && cur ? cur[1] : t.cr;
+  const unN = unsent().length;
   return `
+  ${unN ? `<div class="qsend"><span>未送信 <b>${unN}</b> 件</span><button id="bquick">⚡ サッと送る</button></div>` : ''}
   <div class="card"><h2>① 何の取引ですか？</h2>
     <div class="tpl">${ts.map((x, i) => `<button data-t="${i}" class="${i === ui.tpl ? 'on' : ''}">${esc(x.n)}<small>${esc(x.dr)} / ${esc(x.cr)}</small></button>`).join('')}</div>
   </div>
@@ -173,6 +179,7 @@ VIEWS.entry_after = () => {
   $('#date').onchange = e => { ui.date = e.target.value || today(); };
   $('#btoday').onclick = () => { ui.date = today(); $('#date').value = ui.date; toast('今日の日付にしました'); };
   $('#add').onclick = addEntry;
+  if($('#bquick')) $('#bquick').onclick = () => quickSend(unsent());
   $('#amt').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addEntry(); } });
   if(ui.focusAmt){ // 取引を選んだら金額欄まで自動で送る（ボタンが多いので下に隠れるため）
     ui.focusAmt = false; const a = $('#amt');
@@ -228,17 +235,39 @@ function csvText(list, bom){
   const lines = [CSV_HEAD, ...list.map(e => [e.date, e.dr, e.cr, e.amt, e.memo, e.id])];
   return (bom ? '﻿' : '') + lines.map(r => r.map(q).join(',')).join('\r\n') + '\r\n';
 }
-const csvName = () => `スマホ入力_${today().replace(/-/g,'')}.csv`;
+/* 同じ日に何回送っても名前がぶつからないよう時刻も付ける（Googleドライブに置くときの重複防止） */
+const csvName = () => { const d = new Date(); return `スマホ入力_${today().replace(/-/g,'')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.csv`; };
+/* ⚡ サッと送る：LINEなどに「文字」で送る。パソコンでは決算帳の「📋 貼り付けて取り込む」を押すだけ */
+async function quickSend(list){
+  if(!list.length) return toast('送る入力がありません', 1);
+  const text = csvText(list, false);
+  let shared = false;
+  try {
+    if(navigator.share){ await navigator.share({ text }); shared = true; }
+    else { await navigator.clipboard.writeText(text); toast('コピーしました。LINEなどに貼り付けて送ってください'); }
+  } catch(e){
+    if(e && e.name === 'AbortError') return; // 送り先を選ばずに閉じた
+    try { await navigator.clipboard.writeText(text); toast('コピーしました。LINEなどに貼り付けて送ってください'); }
+    catch(_){ return toast('送れませんでした。「PCへ送る」画面のボタンを使ってください', 1); }
+  }
+  const un = list.filter(e => !e.sent);
+  if(shared && un.length && confirm(`送れましたか？\n${un.length}件を「送信済」にします。\n（パソコンに取り込むまで、スマホからは消えません）`)){
+    un.forEach(e => e.sent = true); D.lastSent = new Date().toISOString(); save(); render(); toast('送信済みにしました');
+  }
+}
 VIEWS.send = () => {
   const un = unsent(), sent = D.entries.length - un.length;
   const fname = csvName();
   return `
   <div class="card ${un.length ? '' : 'ok'}"><h2>パソコンの決算帳に取り込む</h2>
     ${un.length ? `<p style="margin:0 0 10px"><b style="font-size:19px">未送信 ${un.length} 件</b>　<span class="note">（${un[un.length-1] ? md(un.map(e=>e.date).sort()[0]) : ''} 〜 ${un.length ? md(un.map(e=>e.date).sort().slice(-1)[0]) : ''}）</span></p>
-    <button class="big blue" id="bshare">📤 CSVを送る（LINE・メール・ドライブ）</button>
+    <button class="big blue" id="bquick2">⚡ サッと送る（LINEなどに文字で）</button>
+    <p class="note" style="margin:6px 0 4px">パソコンでは、届いたメッセージをコピーして決算帳の <b>「📋 貼り付けて取り込む」</b> を押すだけ。</p>
+    <button class="sub" id="bshare">📤 CSVファイルで送る（Googleドライブ・メール）</button>
     <button class="sub" id="bfile">💾 CSVファイルに保存（${esc(fname)}）</button>
     <button class="sub" id="bcopy">📋 CSVの文字をコピーする</button>
-    <p class="note" style="margin-top:10px">どれか1つでOKです。パソコンの決算帳を開き、左メニューの <b>「📱 スマホから取り込み」</b> でファイルを選ぶか、コピーした文字を貼り付けてください。</p>`
+    <p class="note" style="margin-top:10px">どれか1つでOKです。パソコンの決算帳を開き、左メニューの <b>「📱 スマホから取り込み」</b> で取り込みます。<br>
+    Googleドライブに置いた場合は、決算帳の <b>「📥 まとめて取り込む」</b> でまとめて読めます。</p>`
     : '<p style="margin:0">未送信の入力はありません。</p>'}
   </div>
   ${un.length ? `<div class="card"><h2>送る中身（CSV・確認用）</h2><textarea class="out" id="out" readonly>${esc(csvText(un, false))}</textarea></div>` : ''}
@@ -246,6 +275,7 @@ VIEWS.send = () => {
     <p class="note" style="margin-top:0">パソコンに取り込めたことを確認してから、この2つを押してください。</p>
     <button class="sub" id="bmark" ${un.length ? '' : 'disabled'}>✓ 未送信 ${un.length} 件を「送信済」にする</button>
     <button class="sub dz" id="bclear" ${sent ? '' : 'disabled'}>🗑 送信済み ${sent} 件をこのスマホから削除</button>
+    ${sent ? `<button class="sub" id="bresend">🔁 送信済みも含めて全部（${D.entries.length}件）送り直す</button>` : ''}
     <p class="note">※ 決算帳側は同じ入力を二重に取り込まないようになっているので、間違えて2回送っても増えません。</p>
   </div>`;
 };
@@ -253,6 +283,8 @@ VIEWS.send_after = () => {
   const un = unsent(), data = csvText(un, true), fname = csvName();
   const dl = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type:'text/csv' })); a.download = fname; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); };
   const b = id => $('#' + id);
+  if(b('bquick2')) b('bquick2').onclick = () => quickSend(unsent());
+  if(b('bresend')) b('bresend').onclick = () => quickSend(D.entries);
   if(b('bshare')) b('bshare').onclick = async () => {
     const file = new File([data], fname, { type:'text/csv' });
     try {
@@ -317,6 +349,7 @@ function render(keepAmt){
   $('#main').scrollTop = 0;
 }
 $$('nav button').forEach(b => b.onclick = () => { ui.view = b.dataset.v; render(); });
+$('#hst').onclick = () => { ui.view = 'send'; render(); }; // 上の「未送信○件」を押しても送る画面へ
 D.opens = (D.opens || 0) + 1; save(); // 開いた回数＝保存が効いているかの目印
 render();
 </script>
