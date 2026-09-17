@@ -221,23 +221,27 @@ VIEWS.list_after = () => {
   });
 };
 
-function payload(list){
-  return JSON.stringify({ app:'kessan-phone', ver:1, exportedAt:new Date().toISOString(),
-    entries:list.map(e => ({ id:e.id, date:e.date, dr:e.dr, cr:e.cr, amt:e.amt, memo:e.memo })) });
+/* パソコンへ渡すCSV（1行目＝見出し。Excelで開いても文字化けしないよう先頭にBOMを付ける） */
+const CSV_HEAD = ['日付','借方科目','貸方科目','金額','摘要','ID'];
+function csvText(list, bom){
+  const q = v => { v = String(v ?? ''); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const lines = [CSV_HEAD, ...list.map(e => [e.date, e.dr, e.cr, e.amt, e.memo, e.id])];
+  return (bom ? '﻿' : '') + lines.map(r => r.map(q).join(',')).join('\r\n') + '\r\n';
 }
+const csvName = () => `スマホ入力_${today().replace(/-/g,'')}.csv`;
 VIEWS.send = () => {
   const un = unsent(), sent = D.entries.length - un.length;
-  const fname = `スマホ入力_${today().replace(/-/g,'')}.json`;
+  const fname = csvName();
   return `
   <div class="card ${un.length ? '' : 'ok'}"><h2>パソコンの決算帳に取り込む</h2>
     ${un.length ? `<p style="margin:0 0 10px"><b style="font-size:19px">未送信 ${un.length} 件</b>　<span class="note">（${un[un.length-1] ? md(un.map(e=>e.date).sort()[0]) : ''} 〜 ${un.length ? md(un.map(e=>e.date).sort().slice(-1)[0]) : ''}）</span></p>
-    <button class="big blue" id="bshare">📤 送る（LINE・メール・ドライブ）</button>
-    <button class="sub" id="bfile">💾 ファイルに保存（${esc(fname)}）</button>
-    <button class="sub" id="bcopy">📋 文字をコピーする</button>
+    <button class="big blue" id="bshare">📤 CSVを送る（LINE・メール・ドライブ）</button>
+    <button class="sub" id="bfile">💾 CSVファイルに保存（${esc(fname)}）</button>
+    <button class="sub" id="bcopy">📋 CSVの文字をコピーする</button>
     <p class="note" style="margin-top:10px">どれか1つでOKです。パソコンの決算帳を開き、左メニューの <b>「📱 スマホから取り込み」</b> でファイルを選ぶか、コピーした文字を貼り付けてください。</p>`
     : '<p style="margin:0">未送信の入力はありません。</p>'}
   </div>
-  ${un.length ? `<div class="card"><h2>送る中身（確認用）</h2><textarea class="out" id="out" readonly>${esc(payload(un))}</textarea></div>` : ''}
+  ${un.length ? `<div class="card"><h2>送る中身（CSV・確認用）</h2><textarea class="out" id="out" readonly>${esc(csvText(un, false))}</textarea></div>` : ''}
   <div class="card"><h2>送ったあとの片付け</h2>
     <p class="note" style="margin-top:0">パソコンに取り込めたことを確認してから、この2つを押してください。</p>
     <button class="sub" id="bmark" ${un.length ? '' : 'disabled'}>✓ 未送信 ${un.length} 件を「送信済」にする</button>
@@ -246,20 +250,20 @@ VIEWS.send = () => {
   </div>`;
 };
 VIEWS.send_after = () => {
-  const un = unsent(), data = payload(un), fname = `スマホ入力_${today().replace(/-/g,'')}.json`;
-  const dl = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type:'application/json' })); a.download = fname; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); };
+  const un = unsent(), data = csvText(un, true), fname = csvName();
+  const dl = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type:'text/csv' })); a.download = fname; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); };
   const b = id => $('#' + id);
   if(b('bshare')) b('bshare').onclick = async () => {
-    const file = new File([data], fname, { type:'application/json' });
+    const file = new File([data], fname, { type:'text/csv' });
     try {
       if(navigator.canShare && navigator.canShare({ files:[file] })) { await navigator.share({ files:[file], title:'決算帳 スマホ入力' }); return; }
-      if(navigator.share) { await navigator.share({ title:'決算帳 スマホ入力', text:data }); return; }
+      if(navigator.share) { await navigator.share({ title:'決算帳 スマホ入力', text:csvText(un, false) }); return; }
       dl(); toast('共有に対応していないため保存しました');
     } catch(e){ if(e && e.name !== 'AbortError') { dl(); toast('共有できないため保存しました'); } }
   };
   if(b('bfile')) b('bfile').onclick = () => { dl(); toast('保存しました'); };
   if(b('bcopy')) b('bcopy').onclick = async () => {
-    try { await navigator.clipboard.writeText(data); toast('コピーしました'); }
+    try { await navigator.clipboard.writeText(csvText(un, false)); toast('コピーしました'); }
     catch(e){ const o = $('#out'); o.focus(); o.select(); document.execCommand('copy'); toast('コピーしました'); }
   };
   b('bmark').onclick = () => { if(!unsent().length) return; D.entries.forEach(e => e.sent = true); D.lastSent = new Date().toISOString(); save(); render(); toast('送信済みにしました'); };
