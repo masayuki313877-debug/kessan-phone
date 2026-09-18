@@ -73,6 +73,7 @@ input.amt{font-size:30px;text-align:right;font-weight:bold;letter-spacing:.03em;
 .qsend button{border:0;border-radius:8px;background:#fff;color:#0f4f96;font:inherit;font-weight:bold;padding:10px 16px}
 header .st{cursor:pointer}
 textarea.out{height:120px;font-size:11px;font-family:ui-monospace,monospace;white-space:pre;overflow-x:auto}
+a.sub{display:block;color:#0f4f96;text-decoration:none;text-align:left}
 </style>
 </head>
 <body>
@@ -377,6 +378,13 @@ VIEWS.send = () => {
     Googleドライブに置いた場合は、決算帳の <b>「📥 まとめて取り込む」</b> でまとめて読めます。</p>`
     : '<p style="margin:0">未送信の入力はありません。</p>'}
   </div>
+  <div class="card"><h2>📖 パソコンでの取り込み方</h2>
+    <p class="note" style="margin-top:0">パソコンで何を押せばいいか、図入りの説明書で見られます（圏外でも読めます）。</p>
+    <a class="sub" href="guide.html?app=1#s5">📨 送り方と受け取り方（LINE・ダウンロード・ドライブ）</a>
+    <a class="sub" href="guide.html?app=1#s6">💻 パソコンの決算帳で取り込む</a>
+    <a class="sub" href="guide.html?app=1#s11">❓ 取り込めないとき</a>
+    <a class="sub" href="guide.html?app=1">📖 説明書を最初から読む</a>
+  </div>
   ${un.length ? `<div class="card"><h2>送る中身（CSV・確認用）</h2><textarea class="out" id="out" readonly>${esc(csvText(un, false))}</textarea></div>` : ''}
   <div class="card"><h2>送ったあとの片付け</h2>
     <p class="note" style="margin-top:0">パソコンに取り込めたことを確認してから、この2つを押してください。</p>
@@ -421,6 +429,9 @@ VIEWS.conf = () => `
     <p class="note" style="margin-top:0">Chromeの右上「⋮」→ <b>「ホーム画面に追加」</b> を押すと、アイコンから開けるようになります。<br>
     インターネットにつながっていなくても入力できます（圏外でもOK）。</p>
   </div>
+  <div class="card"><h2>📖 説明書</h2>
+    <a class="sub" style="margin-top:0" href="guide.html?app=1">パソコンへの取り込み方・困ったとき</a>
+  </div>
   <div class="card warn"><h2>⚠ データが消えないように</h2>
     <p class="note" style="margin-top:0">入力した内容は<b>このスマホのブラウザの中だけ</b>に保存されています。<br>
     ・ブラウザの「閲覧データの削除」をすると消えます<br>
@@ -457,6 +468,7 @@ function render(keepAmt){
 }
 $$('nav button').forEach(b => b.onclick = () => { ui.view = b.dataset.v; ui.pick = []; ui.bulk = null; ui.editId = null; render(); });
 $('#hst').onclick = () => { ui.view = 'send'; render(); }; // 上の「未送信○件」を押しても送る画面へ
+if(location.hash === '#send'){ ui.view = 'send'; history.replaceState(null, '', location.pathname + location.search); } // 説明書から戻ったとき
 D.opens = (D.opens || 0) + 1; save(); // 開いた回数＝保存が効いているかの目印
 render();
 </script>

@@ -1,7 +1,7 @@
 /* 決算帳 スマホ入力 – オフライン用（圏外でも開けるようにファイルを端末に保存しておく）
    アプリを更新したら CACHE の日付を変えること。古い保存が捨てられ、新しい版に入れ替わる。 */
-const CACHE = 'kessan-phone-202609180847';
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'kessan-phone-202609181202';
+const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './guide.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

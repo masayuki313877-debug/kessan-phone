@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>スマホ取り込み説明書（CSV）</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:"Meiryo","Yu Gothic UI","Hiragino Kaku Gothic ProN",sans-serif;font-size:15px;line-height:1.9;color:#1d2733;background:#eef2f7;margin:0;padding:0 14px 60px}
+.wrap{max-width:1000px;margin:0 auto;background:#fff;padding:0 0 40px;box-shadow:0 0 14px rgba(0,0,0,.08)}
+h1{background:linear-gradient(#2f7fd0,#0f4f96);color:#fff;margin:0;padding:26px 34px;font-size:26px;letter-spacing:.04em}
+h1 small{display:block;font-size:13px;font-weight:normal;opacity:.9;margin-top:6px;letter-spacing:0}
+h2{font-size:20px;margin:44px 34px 14px;padding:8px 0 8px 14px;border-left:7px solid #2f7fd0;background:#f2f7fd}
+h3{font-size:16px;margin:26px 34px 8px;color:#0f4f96;border-bottom:2px solid #dbe6f2;padding-bottom:4px}
+p,ul,ol,table,.box,pre,.flow{margin-left:34px;margin-right:34px}
+ul,ol{padding-left:22px}
+li{margin:4px 0}
+table{border-collapse:collapse;width:calc(100% - 68px);font-size:14px;margin-top:10px;margin-bottom:16px;background:#fff}
+th,td{border:1px solid #b9c8dc;padding:6px 9px;vertical-align:top}
+th{background:#e8f0f9;text-align:left}
+td.n{text-align:right;white-space:nowrap}
+td.c{text-align:center;white-space:nowrap}
+tr:nth-child(even) td{background:#fafcfe}
+.box{border:1px solid #b9c8dc;border-left:5px solid #2f7fd0;background:#f7fbff;padding:12px 16px;margin-top:12px;margin-bottom:16px;border-radius:3px}
+.box table,.box pre{margin:6px 0 0;width:100%}
+.box.ex{border-left-color:#2a9d5c;background:#f4fbf6}
+.box.warn{border-left-color:#d08a00;background:#fffaef}
+.box.ng{border-left-color:#c0392b;background:#fdf4f3}
+.box b.t{display:block;margin-bottom:4px;font-size:14px}
+kbd{background:#f0f3f7;border:1px solid #b9c8dc;border-bottom-width:2px;border-radius:3px;padding:1px 7px;font-size:13px;font-family:inherit}
+code{background:#f0f3f7;padding:1px 6px;border-radius:3px;font-size:14px}
+pre{background:#1d2733;color:#e8f0f9;padding:12px 16px;border-radius:4px;font-size:13px;line-height:1.6;overflow-x:auto;white-space:pre}
+pre .h{color:#9fd3ff}
+.toc{margin:26px 34px;border:1px solid #b9c8dc;background:#f7fbff;padding:16px 22px;border-radius:4px;columns:2;column-gap:34px}
+.toc a{display:block;color:#0f4f96;text-decoration:none;padding:2px 0;break-inside:avoid}
+.note{color:#5a6b7d;font-size:13.5px}
+.tag{display:inline-block;background:#2f7fd0;color:#fff;border-radius:3px;padding:0 8px;font-size:12.5px;margin-right:4px;vertical-align:1px}
+.tag.g{background:#2a9d5c}.tag.o{background:#d08a00}.tag.r{background:#c0392b}.tag.gr{background:#7b8794}
+.flow{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin-top:14px;margin-bottom:18px}
+.flow .st{flex:1;min-width:130px;border:1px solid #b9c8dc;border-radius:6px;background:#f7fbff;padding:10px 10px 8px;font-size:13.5px;line-height:1.5}
+.flow .st b{display:block;color:#0f4f96;font-size:14.5px;margin-bottom:2px}
+.flow .st .dev{display:inline-block;font-size:11.5px;border-radius:3px;padding:0 6px;margin-bottom:4px;color:#fff;background:#2a9d5c}
+.flow .st .dev.pc{background:#0f4f96}
+.flow .ar{align-self:center;color:#7b8794;font-size:18px}
+.url{font-size:17px;font-weight:bold;word-break:break-all}
+.figs{display:flex;gap:14px;flex-wrap:wrap;margin:14px 34px 18px}
+.fig{border:1px solid #b9c8dc;border-radius:8px;background:#fff;padding:10px 10px 8px;flex:1;min-width:210px}
+.fig .cap{font-size:12.5px;color:#1d2733;margin-top:6px;line-height:1.5}
+.fig .cap b{color:#0f4f96}
+.fig svg{display:block;width:100%;height:auto}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.appbar{display:none}
+.inapp .appbar{display:flex;position:sticky;top:0;z-index:5;align-items:center;gap:10px;background:#0f4f96;color:#fff;padding:9px 14px;margin:0 -14px}
+.appbar a{background:#fff;color:#0f4f96;font-weight:bold;text-decoration:none;border-radius:8px;padding:7px 13px;font-size:14px;line-height:1.3;white-space:nowrap}
+.appbar span{font-size:13px;opacity:.9}
+.inapp h2,.inapp h3{scroll-margin-top:60px}
+@media print{
+ .appbar{display:none!important}
+ body{background:#fff;font-size:10.5pt;padding:0}
+ .wrap{box-shadow:none;max-width:none}
+ h1{background:#0f4f96!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ h2{break-after:avoid;background:#eef4fb!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ h3{break-after:avoid}
+ table,.box,pre,.flow{break-inside:avoid}
+ .figs{break-inside:avoid;flex-wrap:nowrap;gap:8px;margin-left:24px;margin-right:24px}
+ .fig{break-inside:avoid;min-width:0;padding:6px}
+ .fig .cap{font-size:9.5pt}
+ th{background:#e8f0f9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ pre{background:#f0f3f7!important;color:#1d2733!important;border:1px solid #b9c8dc}
+ pre .h{color:#0f4f96!important}
+}
+@page{size:A4;margin:12mm 10mm 14mm;@bottom-center{content:counter(page) " / " counter(pages);font-size:9pt;color:#555}}
+</style>
+</head>
+<body>
+<div class="appbar"><a href="./#send" onclick="location.replace('./#send');return false">← 入力アプリに戻る</a><span>パソコンでの取り込み方</span></div>
+<script>if(/[?&]app\b/.test(location.search)) document.documentElement.classList.add('inapp'); /* スマホアプリから開いたときだけ「戻る」を出す */</script>
+<div class="wrap">
+
+<h1>スマホ入力 → パソコン取り込み 説明書
+<small>配達中・現場でスマホに入力した取引を、CSVファイルにしてパソコンの決算帳に取り込む手順　2026年9月版</small></h1>
+
+<div class="toc">
+<a href="#s1">1. 全体の流れ</a>
+<a href="#s2">2. スマホにアプリを入れる（最初に1回）</a>
+<a href="#s3">3. スマホで入力する</a>
+<a href="#s4">4. スマホから送る</a>
+<a href="#s5">5. 送り方と受け取り方（おすすめ3ルート）</a>
+<a href="#s6">6. 決算帳で取り込む</a>
+<a href="#s7">7. CSVの中身（列の意味）</a>
+<a href="#s8">8. ExcelでCSVを開く・直す</a>
+<a href="#s9">9. ExcelでCSVを一から作る</a>
+<a href="#s10">10. 二重に取り込まれないしくみ</a>
+<a href="#s11">11. 取り込めないとき（Q&amp;A）</a>
+<a href="#s12">12. 送ったあとの片付け</a>
+<a href="#s13b">13. 間違えて登録したとき（直す）</a>
+<a href="#s13">付録. 使える科目名の一覧</a>
+</div>
+
+<h2 id="s1">1. 全体の流れ</h2>
+<div class="flow">
+  <div class="st"><span class="dev">スマホ</span><b>① 入力</b>取引ボタン→払い方→金額。圏外でもOK</div><div class="ar">▶</div>
+  <div class="st"><span class="dev">スマホ</span><b>② ⚡ サッと送る</b>入力画面の上のボタン1つでLINEなどへ</div><div class="ar">▶</div>
+  <div class="st"><span class="dev pc">パソコン</span><b>③ 取り込む</b>LINEの文字をコピーして「📋 貼り付けて取り込む」</div><div class="ar">▶</div>
+  <div class="st"><span class="dev">スマホ</span><b>④ 片付け</b>取り込めたら送信済みを削除</div>
+</div>
+<p><b>週に1回くらい</b>このサイクルを回すのがおすすめです。スマホの入力はスマホの中にしか残らないので、ためこむほど消えたときの被害が大きくなります。</p>
+
+<div class="box"><b class="t">💡 CSV（シーエスブイ）とは</b>
+表の中身を、<b>カンマ（,）で区切った文字</b>だけで書いたファイルです。Excelでそのまま開けて、1行＝1件の取引になっています。スマホとパソコンの間でデータを受け渡すための「共通の形式」だと思ってください。</div>
+
+<h2 id="s2">2. スマホにアプリを入れる（最初に1回）</h2>
+<ol>
+<li>スマホの <b>Chrome</b> で、次のアドレスを開きます（このアドレスをLINEで自分に送って、タップするのが楽です）<br>
+<span class="url">https://masayuki313877-debug.github.io/kessan-phone/</span></li>
+<li>青い「決算帳 スマホ入力」の画面が出たら、右上の「⋮」→ <b>「ホーム画面に追加」</b></li>
+<li>ホーム画面にできた <b>帳簿のアイコン</b> から開きます（次からはここから開くだけです）</li>
+</ol>
+
+<h3>ちゃんと保存されるかの確認（最初に1回だけ）</h3>
+<ol>
+<li>アプリを開いて、下の「⚙️ 設定」を押す →「このスマホで開いた回数：<b>1回目</b>」と出ています</li>
+<li>アプリを完全に閉じる（最近使ったアプリの一覧から上にスワイプして消す）</li>
+<li>アイコンから開き直して「⚙️ 設定」→ <b>「2回目」</b>、緑の「✓ 保存は正しく働いています」が出ればOK</li>
+<li>スマホを <b>機内モード</b> にしてアイコンから開く → 開ければ、圏外でも使えます</li>
+</ol>
+<div class="box warn"><b class="t">⚠ 赤い「この開き方では入力が保存できません」が出たとき</b>
+Chrome以外（LINEの中のブラウザなど）で開いています。LINEで開いた場合は、右上のメニューから <b>「ブラウザで開く」→ Chrome</b> を選んでください。</div>
+
+<h2 id="s3">3. スマホで入力する</h2>
+<table>
+<tr><th style="width:140px">手順</th><th>やること</th><th style="width:280px">例：ガソリン 1,500円を現金で</th></tr>
+<tr><td>① 取引を選ぶ</td><td>「ガソリン」「報酬 入金」などのボタンを押す。自動で金額欄まで進みます</td><td>「ガソリン」を押す</td></tr>
+<tr><td>② 払い方を選ぶ</td><td>支払いなら <b>現金／口座／カード／個人のお金</b>、入金なら <b>口座／現金／未入金</b></td><td>「現金」を押す</td></tr>
+<tr><td>③ 金額</td><td>金額を入れて「この内容で登録する」。日付は今日が入っています（違う日はカレンダーで選択）</td><td>1500 と入れて登録</td></tr>
+</table>
+<p class="note">画面上の「未送信 ○件」が、まだパソコンに送っていない件数です。業種（フードデリバリー／建築・内装）は「⚙️ 設定」で切り替えます。</p>
+
+<h2 id="s4">4. スマホから送る</h2>
+<p>送るボタンは、スマホアプリの <b>入力画面のいちばん上</b> と <b>「📤 PCへ送る」画面</b> にあります。</p>
+<table>
+<tr><th style="width:250px">ボタン</th><th>何が起きるか</th><th style="width:170px">パソコン側で使う</th></tr>
+<tr><td><b>⚡ サッと送る</b><br><span class="note">（入力画面の上の青い帯・おすすめ）</span></td><td>共有画面が出るので <b>LINE</b> などを選んで送るだけ。取引が<b>文字</b>で送られます。送ったあと「送信済にしますか？」と聞かれるので「OK」</td><td>📋 貼り付けて取り込む</td></tr>
+<tr><td><b>📤 CSVファイルで送る</b><br><span class="note">（Googleドライブ・メール）</span></td><td>CSVファイルとして共有します。Googleドライブに保存したり、メールに添付したりできます</td><td>📥 まとめて取り込む／📂 CSVファイルを選ぶ</td></tr>
+<tr><td><b>💾 CSVファイルに保存</b></td><td>スマホの「Download」フォルダに保存（USBケーブルで移すとき）</td><td>📂 CSVファイルを選ぶ</td></tr>
+<tr><td><b>📋 CSVの文字をコピーする</b></td><td>文字をコピーするだけ（自分で貼り付けて送るとき）</td><td>📋 貼り付けて取り込む</td></tr>
+<tr><td><b>🔁 全部送り直す</b><br><span class="note">（PCへ送る画面の下）</span></td><td>送信済みの分も含めて、スマホに残っている全部を送ります（LINEのメッセージを消してしまったときなど）</td><td>どれでも。<b>取り込み済みの分は自動でとばされます</b></td></tr>
+</table>
+<p class="note">画面上の「未送信 ○件」を押しても「PCへ送る」画面に移動します。CSVファイルの名前には送った日時が付きます（例：<code>スマホ入力_20260917_1731.csv</code>）。</p>
+
+<h2 id="s5">5. 送り方と受け取り方（おすすめ3ルート）</h2>
+<table>
+<tr><th style="width:200px">ルート</th><th>スマホ</th><th>パソコン</th><th style="width:160px">向いている人</th></tr>
+<tr><td><b>A. LINEで文字</b><br><span class="tag g">いちばん簡単</span></td><td>⚡ サッと送る → LINE</td><td>メッセージをコピー →「📋 貼り付けて取り込む」</td><td>パソコンでもLINEを使う人</td></tr>
+<tr><td><b>B. ファイルをダウンロード</b></td><td>📤 CSVファイルで送る → メール・LINE</td><td>添付を「ダウンロード」に保存 →「📥 まとめて取り込む」</td><td>何回分かためて取り込む人</td></tr>
+<tr><td><b>C. Googleドライブ</b></td><td>📤 CSVファイルで送る → ドライブ</td><td>「📥 まとめて取り込む」<b>を押すだけ</b></td><td>パソコンに「Google ドライブ」を入れられる人</td></tr>
+</table>
+
+<h3>ルートA：LINEで文字を送る（いちばん簡単）</h3>
+<ol>
+<li><b>スマホ</b>：入力画面の上の <b>「⚡ サッと送る」</b> → 共有先で <b>LINE</b> → 自分の <b>Keepメモ</b>（または自分だけのグループ）→ 送信</li>
+<li>スマホに「送れましたか？送信済にします」と出たら <b>OK</b></li>
+<li><b>パソコン</b>：LINEを開き、届いたメッセージを <b>右クリック →「コピー」</b></li>
+<li>決算帳の左メニュー <b>「📱 スマホから取り込み」</b> → <b>「📋 貼り付けて取り込む」</b>（または、その画面で <kbd>Ctrl</kbd>+<kbd>V</kbd>）</li>
+<li>確認画面で <b>「この内容で取り込む」</b></li>
+</ol>
+
+<div class="figs">
+  <div class="fig">
+    <svg viewBox="0 0 200 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="スマホのアプリ画面でサッと送るを押す図">
+      <rect x="10" y="6" width="180" height="318" rx="16" fill="#fff" stroke="#8fa6bf" stroke-width="2"/>
+      <rect x="16" y="12" width="168" height="26" rx="6" fill="#0f4f96"/>
+      <text x="24" y="30" font-size="11" fill="#fff" font-weight="bold">決算帳 スマホ入力</text>
+      <rect x="128" y="17" width="50" height="16" rx="8" fill="#ffffff" opacity=".25"/>
+      <text x="134" y="29" font-size="9" fill="#fff">未送信 3件</text>
+      <rect x="16" y="46" width="168" height="34" rx="9" fill="#0f4f96"/>
+      <text x="24" y="67" font-size="10" fill="#fff">未送信 3 件</text>
+      <rect x="104" y="52" width="74" height="22" rx="7" fill="#fff"/>
+      <text x="112" y="67" font-size="10.5" fill="#0f4f96" font-weight="bold">⚡ サッと送る</text>
+      <text x="16" y="96" font-size="9.5" fill="#0f4f96" font-weight="bold">① 何の取引ですか？</text>
+      <g fill="#f7fbff" stroke="#b9c8dc">
+        <rect x="16" y="102" width="80" height="30" rx="6"/><rect x="104" y="102" width="80" height="30" rx="6"/>
+        <rect x="16" y="138" width="80" height="30" rx="6"/><rect x="104" y="138" width="80" height="30" rx="6"/>
+      </g>
+      <g font-size="9" fill="#1d2733"><text x="22" y="121">報酬 入金</text><text x="110" y="121">ガソリン</text><text x="22" y="157">駐輪・駐車場</text><text x="110" y="157">修理・オイル</text></g>
+      <text x="16" y="186" font-size="9.5" fill="#0f4f96" font-weight="bold">③ 金額と日付</text>
+      <rect x="16" y="192" width="168" height="34" rx="8" fill="#fff" stroke="#b9c8dc"/>
+      <text x="172" y="216" font-size="17" text-anchor="end" font-weight="bold" fill="#1d2733">1,500</text>
+      <rect x="16" y="234" width="168" height="30" rx="8" fill="#1a7a3c"/>
+      <text x="100" y="254" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">この内容で登録する</text>
+      <rect x="16" y="288" width="168" height="30" rx="6" fill="#eef2f7"/>
+      <g font-size="9" fill="#5a6b7d"><text x="30" y="307">入力</text><text x="72" y="307">一覧</text><text x="112" y="307">PCへ送る</text><text x="162" y="307">設定</text></g>
+    </svg>
+    <div class="cap"><b>①</b> 入力画面の上の <b>「⚡ サッと送る」</b> を押す<br><span class="note">（「📤 PCへ送る」画面の同じボタンでもOK）</span></div>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 200 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="共有画面でLINEを選ぶ図">
+      <rect x="10" y="6" width="180" height="318" rx="16" fill="#fff" stroke="#8fa6bf" stroke-width="2"/>
+      <rect x="16" y="12" width="168" height="120" rx="6" fill="#eef2f7"/>
+      <text x="24" y="34" font-size="9" fill="#8a96a3">（アプリの画面）</text>
+      <rect x="10" y="140" width="180" height="184" rx="14" fill="#f7fbff" stroke="#b9c8dc"/>
+      <rect x="82" y="148" width="36" height="4" rx="2" fill="#c7d4e2"/>
+      <text x="24" y="172" font-size="10" fill="#1d2733" font-weight="bold">共有</text>
+      <text x="24" y="188" font-size="8.5" fill="#5a6b7d">日付,借方科目,貸方科目,金額…</text>
+      <g>
+        <circle cx="42" cy="224" r="19" fill="#06c755"/><text x="42" y="228" font-size="9" fill="#fff" text-anchor="middle" font-weight="bold">LINE</text>
+        <circle cx="100" cy="224" r="19" fill="#d94a3d"/><text x="100" y="228" font-size="8" fill="#fff" text-anchor="middle">メール</text>
+        <circle cx="158" cy="224" r="19" fill="#f5c542"/><text x="158" y="228" font-size="8" fill="#5a4a00" text-anchor="middle">ドライブ</text>
+      </g>
+      <text x="42" y="256" font-size="8.5" fill="#1d2733" text-anchor="middle">LINE</text>
+      <text x="100" y="256" font-size="8.5" fill="#1d2733" text-anchor="middle">Gmail</text>
+      <text x="158" y="256" font-size="8.5" fill="#1d2733" text-anchor="middle">ドライブ</text>
+      <circle cx="42" cy="224" r="24" fill="none" stroke="#b52020" stroke-width="2.5"/>
+      <text x="100" y="292" font-size="9" fill="#5a6b7d" text-anchor="middle">送り先のアプリを選ぶ</text>
+    </svg>
+    <div class="cap"><b>②</b> 共有の画面が出たら <b>LINE</b> を選ぶ</div>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 200 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LINEのKeepメモに送る図">
+      <rect x="10" y="6" width="180" height="318" rx="16" fill="#fff" stroke="#8fa6bf" stroke-width="2"/>
+      <rect x="16" y="12" width="168" height="26" rx="6" fill="#06c755"/>
+      <text x="24" y="30" font-size="10.5" fill="#fff" font-weight="bold">送信先を選択</text>
+      <g>
+        <rect x="16" y="46" width="168" height="34" rx="8" fill="#eaf7ee" stroke="#06c755"/>
+        <circle cx="34" cy="63" r="11" fill="#06c755"/><text x="34" y="67" font-size="9" fill="#fff" text-anchor="middle">K</text>
+        <text x="52" y="60" font-size="10" fill="#1d2733" font-weight="bold">Keepメモ</text>
+        <text x="52" y="73" font-size="8.5" fill="#5a6b7d">自分だけのトーク</text>
+        <rect x="16" y="86" width="168" height="30" rx="8" fill="#fff" stroke="#e6ecf3"/>
+        <circle cx="34" cy="101" r="11" fill="#c7d4e2"/><text x="52" y="105" font-size="9.5" fill="#5a6b7d">友だち</text>
+      </g>
+      <rect x="150" y="128" width="34" height="20" rx="10" fill="#06c755"/>
+      <text x="167" y="142" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold">送信</text>
+      <rect x="16" y="162" width="168" height="120" rx="8" fill="#eef2f7"/>
+      <text x="24" y="180" font-size="9" fill="#5a6b7d">Keepメモ</text>
+      <rect x="56" y="188" width="124" height="80" rx="8" fill="#a6e6bb"/>
+      <g stroke="#2f7f55" stroke-width="1.4" opacity=".8">
+        <line x1="64" y1="200" x2="172" y2="200"/><line x1="64" y1="212" x2="172" y2="212"/>
+        <line x1="64" y1="224" x2="164" y2="224"/><line x1="64" y1="236" x2="172" y2="236"/>
+        <line x1="64" y1="248" x2="140" y2="248"/>
+      </g>
+      <text x="100" y="302" font-size="9" fill="#5a6b7d" text-anchor="middle">取引が文字で送られる</text>
+    </svg>
+    <div class="cap"><b>③</b> <b>Keepメモ</b>（自分だけのトーク）を選んで送信<br><span class="note">スマホに「送信済にしますか？」と出たら OK</span></div>
+  </div>
+</div>
+
+<div class="figs">
+  <div class="fig" style="min-width:300px">
+    <svg viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="パソコンのLINEでメッセージをコピーする図">
+      <rect x="6" y="6" width="328" height="198" rx="8" fill="#fff" stroke="#8fa6bf" stroke-width="2"/>
+      <rect x="6" y="6" width="328" height="22" rx="8" fill="#eef2f7"/>
+      <text x="16" y="21" font-size="10" fill="#5a6b7d">LINE（パソコン版）　Keepメモ</text>
+      <rect x="150" y="44" width="170" height="86" rx="8" fill="#a6e6bb"/>
+      <g stroke="#2f7f55" stroke-width="1.4" opacity=".8">
+        <line x1="160" y1="58" x2="310" y2="58"/><line x1="160" y1="72" x2="310" y2="72"/>
+        <line x1="160" y1="86" x2="296" y2="86"/><line x1="160" y1="100" x2="310" y2="100"/>
+        <line x1="160" y1="114" x2="268" y2="114"/>
+      </g>
+      <rect x="196" y="96" width="106" height="82" rx="6" fill="#fff" stroke="#b9c8dc"/>
+      <rect x="198" y="120" width="102" height="20" fill="#e9f3ff"/>
+      <g font-size="10" fill="#1d2733">
+        <text x="206" y="114">返信</text><text x="206" y="134" font-weight="bold">コピー</text>
+        <text x="206" y="154">転送</text><text x="206" y="172">削除</text>
+      </g>
+      <circle cx="176" cy="130" r="9" fill="none" stroke="#b52020" stroke-width="2"/>
+      <text x="176" y="134" font-size="9" fill="#b52020" text-anchor="middle">右</text>
+      <text x="16" y="60" font-size="10" fill="#5a6b7d">メッセージの上で</text>
+      <text x="16" y="76" font-size="10" fill="#5a6b7d">右クリック →</text>
+      <text x="16" y="92" font-size="11" fill="#b52020" font-weight="bold">「コピー」</text>
+    </svg>
+    <div class="cap"><b>④</b> パソコンのLINEで、届いたメッセージを <b>右クリック →「コピー」</b></div>
+  </div>
+  <div class="fig" style="min-width:300px">
+    <svg viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="決算帳で貼り付けて取り込む図">
+      <rect x="6" y="6" width="328" height="198" rx="8" fill="#fff" stroke="#8fa6bf" stroke-width="2"/>
+      <rect x="6" y="6" width="328" height="22" rx="8" fill="#0f4f96"/>
+      <text x="16" y="21" font-size="10" fill="#fff" font-weight="bold">個人事業 決算帳</text>
+      <rect x="6" y="28" width="86" height="176" fill="#f7fbff"/>
+      <g font-size="9" fill="#5a6b7d">
+        <text x="14" y="46">現金出納帳</text><text x="14" y="62">預金出納帳</text><text x="14" y="78">仕訳日記帳</text>
+        <text x="14" y="102">損益計算書</text><text x="14" y="118">貸借対照表</text>
+      </g>
+      <rect x="8" y="128" width="82" height="18" rx="4" fill="#e9f3ff" stroke="#2f7fd0"/>
+      <text x="14" y="141" font-size="9" fill="#0f4f96" font-weight="bold">📱 スマホから取り込み</text>
+      <rect x="100" y="38" width="226" height="52" rx="6" fill="#f7fbff" stroke="#b9c8dc"/>
+      <text x="110" y="54" font-size="9.5" fill="#0f4f96" font-weight="bold">① LINEなどで文字を送った</text>
+      <rect x="110" y="60" width="118" height="20" rx="5" fill="#2f7fd0"/>
+      <text x="169" y="74" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold">📋 貼り付けて取り込む</text>
+      <text x="236" y="74" font-size="9" fill="#5a6b7d">または Ctrl+V</text>
+      <rect x="100" y="98" width="226" height="98" rx="6" fill="#fff" stroke="#b9c8dc"/>
+      <text x="110" y="114" font-size="9.5" fill="#0f4f96" font-weight="bold">取り込む内容の確認</text>
+      <g stroke="#dbe6f2"><line x1="110" y1="122" x2="316" y2="122"/><line x1="110" y1="138" x2="316" y2="138"/><line x1="110" y1="154" x2="316" y2="154"/></g>
+      <g font-size="8.5" fill="#1d2733">
+        <text x="112" y="133">9/17　車両費 / 現金　1,500　ガソリン</text>
+        <text x="112" y="149">9/17　普通預金 / 売上高　12,800　報酬</text>
+      </g>
+      <rect x="210" y="162" width="106" height="20" rx="5" fill="#1a7a3c"/>
+      <text x="263" y="176" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold">この内容で取り込む</text>
+    </svg>
+    <div class="cap"><b>⑤</b> 決算帳の <b>「📱 スマホから取り込み」</b> → <b>「📋 貼り付けて取り込む」</b> → 内容を見て <b>「この内容で取り込む」</b></div>
+  </div>
+</div>
+<p class="note" style="margin-top:0">※ 上の図は操作の流れを説明するための<b>イメージ図</b>です。スマホの機種やLINEの版によって、ボタンの位置や言葉が少し違うことがあります。</p>
+<div class="box"><b class="t">💡 初めて「📋 貼り付けて取り込む」を押したとき</b>
+「クリップボードの読み取りを許可しますか？」と聞かれたら <b>「許可」</b>。許可しなかった場合も、その画面で <kbd>Ctrl</kbd>+<kbd>V</kbd> を押せば同じように取り込めます。<br>
+LINEでコピーすると、上に日付や名前の行が付くことがありますが、そのままで大丈夫です（決算帳が自動で見出しの行を探します）。</div>
+
+<h3>ルートB：ファイルをダウンロードフォルダに保存してまとめて取り込む</h3>
+<ol>
+<li><b>スマホ</b>：「📤 PCへ送る」→ <b>「📤 CSVファイルで送る」</b> → Gmail（自分あて）やLINEで送る</li>
+<li><b>パソコン</b>：届いたCSVを保存（ダウンロード）する。<b>何回分たまっていてもOK</b></li>
+<li>決算帳の <b>「📱 スマホから取り込み」</b> → <b>「📥 まとめて取り込む」</b></li>
+<li><b>初回だけ</b>フォルダを選ぶ画面が出るので <b>「ダウンロード」</b> を選び、「ファイルの表示を許可」→「許可」</li>
+<li>フォルダの中の <code>スマホ入力_○○.csv</code> を全部読んで、<b>まだ取り込んでいない分だけ</b>が一覧に出ます →「この内容で取り込む」</li>
+</ol>
+<div class="box ex"><b class="t">📝 ダウンロードフォルダに関係ないCSVがあっても大丈夫</b>
+銀行の明細など、スマホから送ったCSVではないファイルは<b>自動でとばします</b>（「関係ないCSV ○個はとばしました」と表示）。「スマホ入力_ひな形.csv」も読みません。<br>
+取り込み済みのCSVを消さずに置いたままでも、<b>二重には入りません</b>（「新しい取引はありません」と出ます）。</div>
+
+<h3>ルートC：Googleドライブで受け渡す</h3>
+<p><b>準備（最初に1回）</b></p>
+<ol>
+<li>パソコンに <b>「Google ドライブ（パソコン版）」</b> をインストールし、スマホと同じGoogleアカウントでログイン。エクスプローラーに <b>「Google Drive（G:）」</b> が出ます</li>
+<li>スマホのGoogleドライブアプリで「＋」→「フォルダ」→ <b>「決算帳_受け取り」</b> というフォルダを作る</li>
+<li>決算帳の「📱 スマホから取り込み」→ ③の <b>「フォルダを変える」</b> → <code>G:\マイドライブ\決算帳_受け取り</code> を選んで「許可」</li>
+</ol>
+<p><b>毎回</b></p>
+<ol>
+<li><b>スマホ</b>：「📤 PCへ送る」→ <b>「📤 CSVファイルで送る」</b> → <b>ドライブ</b> → 保存先を「決算帳_受け取り」にして「保存」</li>
+<li><b>パソコン</b>：決算帳の <b>「📥 まとめて取り込む」</b> を押すだけ →「この内容で取り込む」</li>
+</ol>
+<div class="box warn"><b class="t">⚠ 送ってすぐは、パソコンにまだ届いていないことがあります</b>
+Googleドライブがパソコンに同期するまで、数十秒〜数分かかることがあります。「スマホから送ったCSVがありません」と出たら、少し待ってからもう一度押してください。</div>
+
+<h3>そのほかの方法</h3>
+<ul>
+<li><b>CSVファイルを決算帳の画面にドラッグ</b>して放すだけでも、取り込みの確認画面が開きます（どの画面からでもOK・複数ファイルも可）</li>
+<li><b>USBケーブル</b>：スマホで「💾 CSVファイルに保存」→ スマホをパソコンにつなぎ「ファイル転送」を選ぶ → 「内部共有ストレージ」→「Download」のCSVを、決算帳の画面にドラッグ</li>
+</ul>
+
+<h2 id="s6">6. 決算帳で取り込む</h2>
+<p>左メニューの <b>「📱 スマホから取り込み」</b> に、取り込み方のボタンが並んでいます。</p>
+<table>
+<tr><th style="width:230px">ボタン</th><th>使うとき</th></tr>
+<tr><td><b>📋 貼り付けて取り込む</b></td><td>LINEなどで<b>文字</b>を受け取ったとき（この画面で <kbd>Ctrl</kbd>+<kbd>V</kbd> でも同じ）</td></tr>
+<tr><td><b>📂 CSVファイルを選ぶ</b></td><td>CSVファイルが手元にあるとき。<b>いくつかまとめて選べます</b></td></tr>
+<tr><td><b>📥 まとめて取り込む</b></td><td>ダウンロードフォルダやGoogleドライブのフォルダにCSVがたまっているとき。初回だけフォルダを選びます</td></tr>
+<tr><td><span class="note">（ドラッグ）</span></td><td>CSVファイルを画面にドラッグして放す</td></tr>
+</table>
+<ol>
+<li>決算帳を起動し、<b>「ファイルを開いて続きから」</b> を押す（右上のランプが緑になったのを確認）</li>
+<li>上のどれかで取り込む内容を読み込む</li>
+<li>「取り込む内容の確認」に <b>新しく取り込む取引だけ</b>が一覧で出ます（取り込み済みの分は隠れています。「取り込み済みも表示する」で見られます）</li>
+<li><b>「この内容で取り込む（○件）」</b> → 確認のメッセージで「OK」</li>
+<li>「○件を取り込みました」と出たら完了。<b>仕訳日記帳</b>で確認してください</li>
+</ol>
+
+<h3>確認画面の「状態」の意味</h3>
+<table>
+<tr><th style="width:260px">表示</th><th>意味</th><th style="width:230px">どうする</th></tr>
+<tr><td><span class="tag g">新しく取り込みます</span></td><td>これから帳簿に追加される取引</td><td>そのままでOK</td></tr>
+<tr><td><span class="tag gr">取り込み済み（とばします）</span></td><td>前に取り込んだことがある取引。<b>二重には入りません</b></td><td>そのままでOK</td></tr>
+<tr><td><span class="tag r">科目がありません</span></td><td>決算帳にまだ無い科目名（例：車両費）</td><td>「経費として自動で追加」にチェックを入れて取り込む。打ち間違いなら <a href="#s8">CSVを直す</a></td></tr>
+<tr><td><span class="tag r">対象の年のデータがありません</span></td><td>年をまたいだ取引（例：2027年1月の入力）</td><td>決算帳で「次年度繰越」をしてから、もう一度取り込む</td></tr>
+<tr><td><span class="tag r">日付・科目・金額のどれかが正しくありません</span></td><td>2月30日のような日付、金額が空・文字など</td><td>CSVの該当の行を直す</td></tr>
+</table>
+
+<div class="box ex"><b class="t">📝 表の左端の「行」は、Excelで開いたときの行番号です</b>
+例えば「行 5」が「正しくありません」なら、CSVをExcelで開いて <b>5行目</b> を見れば該当の取引です（1行目は見出し）。</div>
+
+<div class="box warn"><b class="t">⚠ 「科目を経費として自動で追加」について</b>
+追加された科目は、損益計算書の空欄㉕〜㉚に印字されます（6つまで）。<b>「消耗品費」を「消耗品」と打ち間違えた</b>ような場合に自動追加すると、別の科目が増えてしまいます。見慣れない科目名が出たら、チェックを外してCSVを直してください。</div>
+
+<h2 id="s7">7. CSVの中身（列の意味）</h2>
+<p>スマホから出てくるCSVは、次のような形です。</p>
+<pre><span class="h">日付,借方科目,貸方科目,金額,摘要,ID</span>
+2026-09-17,車両費,現金,1500,ガソリン,pmu4wzjuv5ebr
+2026-09-17,普通預金,売上高,12800,配達報酬,pmu4wzk2agw6y
+2026-09-17,消耗品費,未払金,3300,"配達バッグ, 大きめ",pmu4wzk2g73yb</pre>
+
+<table>
+<tr><th style="width:90px">列</th><th style="width:110px">見出し</th><th>中身</th><th style="width:200px">書き方の例</th></tr>
+<tr><td class="c">A</td><td><b>日付</b></td><td>取引の日</td><td><code>2026-09-17</code>／<code>2026/9/17</code>／<code>2026年9月17日</code> どれでもOK</td></tr>
+<tr><td class="c">B</td><td><b>借方科目</b></td><td>増えたもの・使ったもの（経費、入金先の口座など）</td><td>車両費、普通預金</td></tr>
+<tr><td class="c">C</td><td><b>貸方科目</b></td><td>減ったもの・お金の出どころ（払った財布、売上など）</td><td>現金、売上高</td></tr>
+<tr><td class="c">D</td><td><b>金額</b></td><td>円。税込みの金額</td><td><code>1500</code>／<code>1,500</code>／<code>￥1500</code> どれでもOK</td></tr>
+<tr><td class="c">E</td><td>摘要</td><td>メモ（お店の名前など）。空でもOK</td><td>○○スタンド</td></tr>
+<tr><td class="c">F</td><td>ID</td><td>スマホが1件ずつに付けた<b>目印</b>。二重取り込みを防ぐために使います</td><td><b>消さない・変えない</b></td></tr>
+</table>
+
+<div class="box"><b class="t">💡 借方・貸方の見分け方（迷ったらこれ）</b>
+<table>
+<tr><th>取引</th><th>借方科目</th><th>貸方科目</th></tr>
+<tr><td>ガソリンを<b>現金</b>で払った</td><td>車両費</td><td>現金</td></tr>
+<tr><td>スマホ代が<b>口座</b>から引き落とし</td><td>通信費</td><td>普通預金</td></tr>
+<tr><td>配達用品を<b>カード</b>で買った</td><td>消耗品費</td><td>未払金</td></tr>
+<tr><td>仕事の物を<b>個人のお金</b>で買った</td><td>消耗品費</td><td>事業主借</td></tr>
+<tr><td>報酬が<b>口座</b>に入った</td><td>普通預金</td><td>売上高</td></tr>
+<tr><td>ATMで口座から現金を下ろした</td><td>現金</td><td>普通預金</td></tr>
+</table>
+<span class="note">お金を払ったときは「貸方＝払ったお財布」、お金が入ったときは「借方＝入った先」と覚えると簡単です。</span></div>
+
+<h2 id="s8">8. ExcelでCSVを開く・直す</h2>
+<p>取り込む前に内容を直したいとき（金額の打ち間違い、メモの追加など）は、CSVをExcelで開いて直せます。</p>
+<ol>
+<li><code>スマホ入力_○○.csv</code> を <b>ダブルクリック</b>（Excelで開きます）</li>
+<li>セルを直す</li>
+<li><kbd>F12</kbd>（名前を付けて保存）→ ファイルの種類を <b>「CSV（コンマ区切り）(*.csv)」</b>（新しいExcelなら「CSV UTF-8」でも可）→「保存」</li>
+<li>「一部の機能が失われる可能性があります」と出たら <b>「はい」</b>（CSVには色や書式が保存されないという意味で、中身は問題ありません）</li>
+<li>Excelを閉じるときに「変更を保存しますか？」と聞かれたら、もう保存済みなので「保存しない」でOK</li>
+<li>決算帳で、そのCSVを取り込む</li>
+</ol>
+
+<h3>Excelで開いたときに気になる点（問題ありません）</h3>
+<table>
+<tr><th style="width:280px">見え方</th><th>説明</th></tr>
+<tr><td>日付が <code>2026-09-17</code> から <code>2026/9/17</code> に変わる</td><td>Excelの表示のしかたです。そのまま保存してOK。決算帳はどちらも読めます</td></tr>
+<tr><td>保存し直すとファイルの文字コードが変わる</td><td>Excel 2013 の「CSV（コンマ区切り）」は Shift-JIS という形式で保存されます。<b>決算帳は自動で見分けて読める</b>ので気にしなくて大丈夫です</td></tr>
+<tr><td>ID列（F列）に英数字が並んでいる</td><td>二重取り込みを防ぐ目印です。<b>消したり書き換えたりしないでください</b></td></tr>
+</table>
+
+<div class="box ng"><b class="t">✕ やってはいけないこと</b>
+<ul style="margin:0">
+<li><b>1行目（見出し）を消す・書き換える</b> →「見出しが見つかりません」になって取り込めません</li>
+<li><b>ID列（F列）を消す・書き換える</b> → 前に取り込んだ取引が、別の取引とみなされて<b>二重に入ります</b></li>
+<li><b>「Excel ブック（*.xlsx）」で保存する</b> → CSVではないので取り込めません。必ず「CSV」を選んでください</li>
+<li><b>科目名を略す</b>（「消耗品費」→「消耗品」など）→「科目がありません」になります</li>
+</ul></div>
+
+<div class="box warn"><b class="t">⚠ 文字化けして読めないとき</b>
+ダブルクリックで開いて「譌･莉倥…」のような文字になる場合は、Excelの <b>「データ」タブ →「テキストファイル」</b> から開き、文字コードで <b>「65001 : Unicode (UTF-8)」</b> を選んでください。スマホアプリから出たCSVは通常そのまま開けます。</div>
+
+<h2 id="s9">9. ExcelでCSVを一から作る</h2>
+<p>スマホに入れ忘れた分をまとめて入れたいときや、レシートの束をExcelで一気に打ちたいときに使えます。</p>
+<ol>
+<li>決算帳の「📱 スマホから取り込み」→ <b>「Excel入力用のひな形CSV」</b> を押す → <code>スマホ入力_ひな形.csv</code> が保存される</li>
+<li>ダブルクリックでExcelで開く（見出しと、例が2行入っています）</li>
+<li>例の2行を消して、<b>2行目から</b>取引を1行ずつ入力</li>
+<li><b>ID列（F列）は空のままでOK</b></li>
+<li>「CSV（コンマ区切り）」で保存 → 決算帳で取り込む</li>
+</ol>
+
+<div class="box ex"><b class="t">📝 入力例（レシートの束をまとめて入れる）</b>
+<div class="tscroll"><table>
+<tr><th class="c">行</th><th>A 日付</th><th>B 借方科目</th><th>C 貸方科目</th><th>D 金額</th><th>E 摘要</th><th>F ID</th></tr>
+<tr><td class="c">1</td><td>日付</td><td>借方科目</td><td>貸方科目</td><td>金額</td><td>摘要</td><td>ID</td></tr>
+<tr><td class="c">2</td><td>2026/10/1</td><td>車両費</td><td>現金</td><td class="n">1,620</td><td>ガソリン ENEOS</td><td></td></tr>
+<tr><td class="c">3</td><td>2026/10/3</td><td>消耗品費</td><td>現金</td><td class="n">1,980</td><td>レインコート</td><td></td></tr>
+<tr><td class="c">4</td><td>2026/10/5</td><td>修繕費</td><td>未払金</td><td class="n">8,800</td><td>原付 タイヤ交換（カード）</td><td></td></tr>
+<tr><td class="c">5</td><td>2026/10/10</td><td>普通預金</td><td>売上高</td><td class="n">45,300</td><td>Uber Eats 報酬</td><td></td></tr>
+</table></div></div>
+
+<div class="box warn"><b class="t">⚠ ID列が空の行を、あとで直して取り込み直すと二重になります</b>
+ID列が空の行は、<b>「日付・科目・金額・摘要」の中身</b>で同じ取引かどうかを見分けます。そのため、一度取り込んだあとに<b>金額やメモを直して</b>もう一度取り込むと、<b>別の取引として追加</b>されます。<br>
+取り込んだあとに間違いに気づいたら、CSVではなく <b>決算帳の仕訳日記帳で直接直してください</b>。</div>
+
+<h2 id="s10">10. 二重に取り込まれないしくみ</h2>
+<table>
+<tr><th style="width:230px">CSVの行</th><th>どうやって見分けるか</th><th style="width:250px">例</th></tr>
+<tr><td><b>ID列に目印がある</b><br><span class="note">（スマホから出たCSV）</span></td><td>IDが同じなら、<b>中身をExcelで直していても</b>「取り込み済み」</td><td>同じCSVを2回取り込む → 2回目は全部「取り込み済み」</td></tr>
+<tr><td><b>ID列が空</b><br><span class="note">（Excelで手入力した行）</span></td><td>日付・借方・貸方・金額・摘要が<b>全部同じ</b>なら「取り込み済み」</td><td>同じ日に同じガソリン代を2回入れた行 → <b>別々の取引</b>として2件とも入る（1ファイルの中で数えるため）</td></tr>
+</table>
+<p class="note">取り込んだ取引には、仕訳の中にこの目印が記録されています。取り込み済みかどうかは、その年だけでなく<b>決算帳に入っている全部の年</b>で調べます。</p>
+
+<h2 id="s11">11. 取り込めないとき（Q&amp;A）</h2>
+
+<h3>Q. 「CSVの1行目（見出し）に…が見つかりません」と出る</h3>
+<p>1行目が <code>日付,借方科目,貸方科目,金額,摘要,ID</code> になっていません。Excelで開いて1行目を直すか、「ひな形CSV」から作り直してください。見出しの並び順は入れ替わっていても読めます。</p>
+
+<h3>Q. 「スマホ入力のデータではないようです」と出る</h3>
+<p>別のファイル（決算帳のデータファイル <code>決算データ_○○.json</code> など）を選んでいます。<code>スマホ入力_○○.csv</code> を選んでください。</p>
+
+<h3>Q. 「このCSVはパソコンの仕訳日記帳から出力したもの」と出る</h3>
+<p>決算帳の「仕訳日記帳 → CSV出力」で作ったCSVを選んでいます。同じ帳簿に取り込むと、<b>すでに入っている取引が二重に入ります</b>。スマホから来たCSVを選び直してください。</p>
+
+<h3>Q. 「科目がありません」がたくさん出る</h3>
+<p>多いのは <b>車両費</b> と <b>支払手数料</b> です。この2つは業種テンプレートを入れていないと決算帳にありません。「経費として自動で追加」にチェックを入れて取り込めばOKです。それ以外の見慣れない名前なら、打ち間違いを疑ってください（<a href="#s13">付録</a>の科目名と見比べる）。</p>
+
+<h3>Q. 「CSVファイルを選ぶ」でファイルが見つからない</h3>
+<p>保存した場所を確認してください。LINEやメールから保存したものは <b>「ダウンロード」フォルダ</b> に入っていることが多いです。ファイル選択画面の右下が「CSV」以外になっている場合は「すべてのファイル」にしてみてください。</p>
+
+<h3>Q. 「📋 貼り付けて取り込む」で「貼り付けの許可がありません」と出る</h3>
+<p>ブラウザがクリップボードの読み取りを止めています。その画面で <kbd>Ctrl</kbd>+<kbd>V</kbd> を押してください。同じように取り込めます。</p>
+
+<h3>Q. 「📥 まとめて取り込む」で「スマホから送ったCSVがありません」と出る</h3>
+<p>選んでいるフォルダにCSVが入っていません。「フォルダを変える」で、CSVを保存した場所（ダウンロード、Googleドライブの「決算帳_受け取り」など）を選び直してください。Googleドライブの場合は、同期が終わるまで少し待ってから押してください。</p>
+
+<h3>Q. 「📥 まとめて取り込む」を押すたびに「ファイルの表示を許可」と聞かれる</h3>
+<p>ブラウザの安全のしくみで、決算帳を起動するたびに1回聞かれます。「許可」を押してください。</p>
+
+<h3>Q. 取り込んだのに、損益計算書の数字が変わらない</h3>
+<p>ヘッダーの「会計年度」が、取り込んだ取引の年と違っていないか確認してください。取引は<b>日付の年</b>の帳簿に入ります。</p>
+
+<h3>Q. 間違えて取り込んでしまった</h3>
+<p>仕訳日記帳で該当の行をクリック →「この仕訳を削除」で消せます。まとめて戻したいときは「データ保存」画面の自動バックアップ（1日1回）から戻す方法もあります。</p>
+
+<h3>Q. スマホの入力が消えてしまった</h3>
+<p>スマホのブラウザの「閲覧データの削除」や機種変更で消えます。<b>パソコンに取り込んだ分は決算帳に残っています</b>。取り込み前の分は残念ながら戻せないので、週1回の取り込みを習慣にしてください。</p>
+
+<h2 id="s12">12. 送ったあとの片付け</h2>
+<p class="note">「⚡ サッと送る」で送った場合は、送った直後に「送信済」にしているので、下の2. だけでOKです。</p>
+<p><b>パソコンに取り込めたことを確認してから</b>、スマホの「📤 PCへ送る」画面の下で次の2つを押します。</p>
+<ol>
+<li><b>「✓ 未送信 ○件を『送信済』にする」</b> … 一覧で薄い表示になり、次のCSVに入らなくなります</li>
+<li><b>「🗑 送信済み ○件をこのスマホから削除」</b> … スマホの中が軽くなります（しばらく残しておいても大丈夫です）</li>
+</ol>
+<div class="box warn"><b class="t">⚠ 取り込み前に「削除」しないでください</b>
+削除した分はスマホから完全に消え、戻せません。必ず<b>決算帳の仕訳日記帳に入っているのを見てから</b>削除してください。「送信済」にするだけなら、あとで一覧から確認できます。</div>
+
+<h2 id="s13b">13. 間違えて登録したとき（直す）</h2>
+<p><b>現金で払ったつもりがカード払いだった</b>——のような取り違えは、スマホでもパソコンでも、あとからまとめて直せます。<b>どちらで直しても、やり直しの入力は要りません。</b></p>
+
+<h3>スマホで直す（まだパソコンに取り込んでいないとき）</h3>
+<table>
+<tr><th style="width:190px">やりたいこと</th><th>操作</th></tr>
+<tr><td><b>1件だけ直す</b></td><td>「📋 一覧」で<b>行をタップ</b> → 金額・日付・メモを直す／科目・払い方はボタンから選ぶ → <b>「この内容で保存する」</b></td></tr>
+<tr><td><b>まとめて直す</b></td><td>「📋 一覧」で直したい行の<b>左のチェックを入れる</b>（何件でも）→ 上に出る青い帯の <b>「払い方を変える」</b>（現金→未払金など）または <b>「科目を変える」</b> → 科目を選ぶ</td></tr>
+<tr><td><b>まとめて消す</b></td><td>チェックを入れて、青い帯の <b>「削除」</b></td></tr>
+</table>
+<div class="box ex"><b class="t">📝 例：現金で払ったことにした3件を、カード払いに直す</b>
+「一覧」で3件にチェック → <b>「払い方を変える」</b> → <b>「未払金」</b> を選ぶ。<br>
+表示が「車両費　現金」から「車両費　未払金」に変わります。</div>
+
+<h3>パソコンで直す（取り込んだあと）</h3>
+<table>
+<tr><th style="width:190px">やりたいこと</th><th>操作</th></tr>
+<tr><td><b>1件だけ直す</b></td><td>仕訳日記帳や出納帳で<b>行をクリック</b> → 入力欄に読み込まれるので直して「修正を登録」</td></tr>
+<tr><td><b>まとめて直す</b></td><td>行の左の<b>チェックを入れる</b>（見出しのチェックで表示中すべて選択）→ 上に出る青い帯から選ぶ<br>
+・仕訳日記帳：<b>「借方科目を変更」「貸方科目を変更」</b><br>
+・出納帳：<b>「『現金』を別の科目に」「相手科目を変更」</b></td></tr>
+<tr><td><b>摘要をまとめて直す</b></td><td>青い帯の <b>「摘要を変更」</b></td></tr>
+<tr><td><b>まとめて消す</b></td><td>青い帯の <b>「削除」</b></td></tr>
+</table>
+<div class="box ex"><b class="t">📝 例：現金出納帳に入っている「カード払いだった3件」を直す</b>
+<ol style="margin:4px 0 0">
+<li>左メニューの <b>現金出納帳</b> を開く</li>
+<li>間違えた3行の左の<b>チェック</b>を入れる</li>
+<li>青い帯の <b>「『現金』を別の科目に」</b> を押す</li>
+<li>科目の一覧から <b>「未払金」</b> を選んで「変更する」</li>
+</ol>
+これで3件とも「車両費 / 未払金」になり、現金出納帳から消えて、貸借対照表の未払金が増えます。翌月のカード引き落としのときに「未払金 / 普通預金」を入力すれば完了です。</div>
+
+<div class="box warn"><b class="t">⚠ 直すときの注意</b>
+・<b>借方と貸方が同じ科目になる行</b>は、変更されずにそのまま残ります（メッセージで件数が出ます）<br>
+・金額・日付はまとめて変更できません（1件ずつ直してください）<br>
+・「決算・自動」と付いた仕訳（棚卸など）は選べません。決算整理の画面で直します<br>
+・<b>スマホで直したあと、もう一度パソコンに送っても反映されません。</b>取り込み済みの行は「取り込み済み」としてとばされるためです。<b>パソコンに取り込んだあとは、パソコン側で直してください</b></div>
+
+<h2 id="s13">付録. 使える科目名の一覧</h2>
+<p>CSVの「借方科目」「貸方科目」には、<b>決算帳にある科目名と一字一句同じ名前</b>を書きます。</p>
+
+<h3>スマホアプリのボタンと科目の対応</h3>
+<table>
+<tr><th>業種</th><th style="width:170px">ボタン</th><th>借方科目</th><th>貸方科目（払い方で変わる）</th></tr>
+<tr><td rowspan="12">フード<br>デリバリー</td><td>報酬 入金</td><td>普通預金／現金／売掛金</td><td>売上高</td></tr>
+<tr><td>ガソリン</td><td>車両費</td><td rowspan="9">現金／普通預金／未払金／事業主借</td></tr>
+<tr><td>駐輪・駐車場</td><td>車両費</td></tr>
+<tr><td>修理・オイル</td><td>修繕費</td></tr>
+<tr><td>配達用品</td><td>消耗品費</td></tr>
+<tr><td>雨具・手袋</td><td>消耗品費</td></tr>
+<tr><td>スマホ代</td><td>通信費</td></tr>
+<tr><td>保険</td><td>損害保険料</td></tr>
+<tr><td>税金(原付)</td><td>租税公課</td></tr>
+<tr><td>電車・高速</td><td>旅費交通費</td></tr>
+<tr><td>ATM引出</td><td>現金</td><td>普通預金</td></tr>
+<tr><td>生活費</td><td>事業主貸</td><td>普通預金</td></tr>
+<tr><td rowspan="12">建築・内装</td><td>工事代 請求</td><td>売掛金</td><td>売上高</td></tr>
+<tr><td>工事代 入金</td><td>普通預金</td><td>売掛金</td></tr>
+<tr><td>材料</td><td>仕入高</td><td rowspan="8">現金／普通預金／未払金／事業主借</td></tr>
+<tr><td>外注費</td><td>外注工賃</td></tr>
+<tr><td>工具・消耗品</td><td>消耗品費</td></tr>
+<tr><td>作業着</td><td>消耗品費</td></tr>
+<tr><td>ガソリン</td><td>車両費</td></tr>
+<tr><td>高速・駐車場</td><td>旅費交通費</td></tr>
+<tr><td>スマホ代</td><td>通信費</td></tr>
+<tr><td>振込手数料</td><td>支払手数料</td></tr>
+<tr><td>ATM引出</td><td>現金</td><td>普通預金</td></tr>
+<tr><td>生活費</td><td>事業主貸</td><td>普通預金</td></tr>
+</table>
+
+<h3>決算帳に最初から入っている主な科目</h3>
+<table>
+<tr><th style="width:130px">区分</th><th>科目名</th></tr>
+<tr><td>お金・資産</td><td>現金、普通預金、当座預金、定期預金、売掛金、棚卸資産、前払金、貸付金、車両運搬具、工具器具備品、事業主貸</td></tr>
+<tr><td>借金・負債など</td><td>買掛金、借入金、未払金、前受金、預り金、事業主借</td></tr>
+<tr><td>収入</td><td>売上高、雑収入</td></tr>
+<tr><td>仕入</td><td>仕入高</td></tr>
+<tr><td>経費</td><td>租税公課、荷造運賃、水道光熱費、旅費交通費、通信費、広告宣伝費、接待交際費、損害保険料、修繕費、消耗品費、減価償却費、福利厚生費、給料賃金、外注工賃、利子割引料、地代家賃、貸倒金、雑費</td></tr>
+<tr><td>業種テンプレートで<br>追加される科目</td><td><b>車両費、支払手数料</b>（無いときは取り込み時に自動追加できます）</td></tr>
+</table>
+<p class="note">決算帳の「勘定科目設定」で自分で追加した科目名も使えます。</p>
+
+<hr style="border:0;border-top:1px dashed #c7d4e2;margin:28px 34px">
+<p class="note">このアプリは青色申告決算書の数字を作るための補助ツールです。申告内容の最終確認は、ご自身または税理士・税務署でお願いします。</p>
+
+</div>
+</body>
+</html>
