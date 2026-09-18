@@ -6,7 +6,9 @@
 <meta name="theme-color" content="#0f4f96">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="決算帳入力">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>決算帳 スマホ入力</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -73,6 +75,9 @@ input.amt{font-size:30px;text-align:right;font-weight:bold;letter-spacing:.03em;
 .qsend button{border:0;border-radius:8px;background:#fff;color:#0f4f96;font:inherit;font-weight:bold;padding:10px 16px}
 header .st{cursor:pointer}
 textarea.out{height:120px;font-size:11px;font-family:ui-monospace,monospace;white-space:pre;overflow-x:auto}
+.odue{background:#fff4e5;border-color:#f0b46a}
+@media (min-width:700px){main{padding-left:calc(50% - 300px);padding-right:calc(50% - 300px)}} /* iPadなど広い画面は中央に寄せる */
+.odue h2{color:#a4520a}
 a.sub{display:block;color:#0f4f96;text-decoration:none;text-align:left}
 </style>
 </head>
@@ -131,6 +136,8 @@ const PRESETS = {
 /* 支払方法（経費のとき貸方を差し替え／入金のとき借方を差し替え） */
 const PAYS = [ ['現金','現金'], ['口座','普通預金'], ['カード','未払金'], ['個人のお金','事業主借'] ];
 const INS  = [ ['口座','普通預金'], ['現金','現金'], ['未入金','売掛金'] ];
+/* 「その他」で選べる経費の科目（PC版の科目名と同じ文字。PCに無い科目は取り込み時に自動追加できる） */
+const OTHER_ACCS = ['消耗品費','車両費','旅費交通費','通信費','支払手数料','修繕費','荷造運賃','広告宣伝費','接待交際費','水道光熱費','地代家賃','損害保険料','租税公課','外注工賃','仕入高','福利厚生費','雑費'];
 
 /* ---- データ ---- */
 let D = load();
@@ -150,10 +157,38 @@ function toast(m, warn){ const t = $('#toast'); t.textContent = m; t.style.backg
 
 /* ---- 入力画面の状態 ---- */
 let ui = { view:'entry', tpl:0, pay:0, date:today() };
+/* いま選んでいる取引（ボタンの最後の「その他」は、科目を自分で選ぶ） */
+function curTpl(){
+  const ts = PRESETS[D.preset].tpls;
+  if(ui.tpl >= ts.length) return { n:'その他', dr: D.oacc || '消耗品費', cr:'現金', memo:'', other:true };
+  return ts[ui.tpl];
+}
+/* iPad・iPhone：Safariで開いた画面とホーム画面のアイコンでは保存場所が別（Safariのままだと消されることもある） */
+const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const STANDALONE = navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+function iosCard(){
+  if(!IOS || STANDALONE) return '';
+  return `<div class="card odue"><h2>⚠ iPad・iPhoneは、ホーム画面のアイコンから使ってください</h2>
+    <p class="note" style="margin:0">Safariで開いたまま入力すると、<b>アイコンから開いたときに出てきません</b>（保存場所が別です）。Safariのままだと、しばらく開かないうちに消されることもあります。<br>
+    Safariの <b>共有ボタン（□に↑）→「ホーム画面に追加」</b> → できたアイコンから開いて入力してください。</p></div>`;
+}
+/* 送り忘れ：未送信でいちばん古い登録から何日たったか */
+const OVERDUE_DAYS = 14;
+function unsentDays(){
+  const un = unsent(); if(!un.length) return 0;
+  const t0 = Math.min(...un.map(e => Date.parse(e.at || e.date) || Date.now()));
+  return Math.floor((Date.now() - t0) / 86400000);
+}
+function overdueCard(){
+  const d = unsentDays(); if(d < OVERDUE_DAYS) return '';
+  return `<div class="card odue"><h2>⚠ ${d}日間、パソコンへ送っていません</h2>
+    <p class="note" style="margin:0 0 8px">未送信の ${unsent().length} 件は<b>このスマホの中にしかありません</b>。機種変更やブラウザのデータ削除で消えてしまうので、早めに送ってください。</p>
+    <button class="big" id="bodue" style="background:#c0660a">📤 今すぐ送る</button></div>`;
+}
 
 const VIEWS = {};
 VIEWS.entry = () => {
-  const ts = PRESETS[D.preset].tpls, t = ts[ui.tpl];
+  const ts = PRESETS[D.preset].tpls, t = curTpl();
   const isIn = t.kind === 'in';
   const opts = t.fix ? null : (isIn ? INS : PAYS);
   const cur = opts ? opts[Math.min(ui.pay, opts.length - 1)] : null;
@@ -161,10 +196,16 @@ VIEWS.entry = () => {
   const cr = !isIn && cur ? cur[1] : t.cr;
   const unN = unsent().length;
   return `
+  ${iosCard()}
+  ${overdueCard()}
   ${unN ? `<div class="qsend"><span>未送信 <b>${unN}</b> 件</span><button id="bquick">⚡ サッと送る</button></div>` : ''}
   <div class="card"><h2>① 何の取引ですか？</h2>
-    <div class="tpl">${ts.map((x, i) => `<button data-t="${i}" class="${i === ui.tpl ? 'on' : ''}">${esc(x.n)}<small>${esc(x.dr)} / ${esc(x.cr)}</small></button>`).join('')}</div>
+    <div class="tpl">${ts.map((x, i) => `<button data-t="${i}" class="${i === ui.tpl ? 'on' : ''}">${esc(x.n)}<small>${esc(x.dr)} / ${esc(x.cr)}</small></button>`).join('')}<button data-t="${ts.length}" class="${t.other ? 'on' : ''}">その他<small>科目を自分で選ぶ</small></button></div>
   </div>
+  ${t.other ? `<div class="card"><h2>何に使いましたか？（科目）</h2>
+    <div class="chips">${OTHER_ACCS.map(a => `<button class="chip ${a === t.dr ? 'on' : ''}" data-oa="${esc(a)}">${esc(a)}</button>`).join('')}</div>
+    <p class="note" style="margin:8px 0 0">迷ったら、10万円未満の物は「消耗品費」、どれにも当てはまらなければ「雑費」。<br>
+    <b>10万円以上の物（バイク・パソコンなど）</b>はここではなく、パソコンの決算帳の「固定資産台帳」に入れてください。</p></div>` : ''}
   ${opts ? `<div class="card"><h2>② ${isIn ? 'どこに入りましたか？' : 'どうやって払いましたか？'}</h2>
     <div class="chips">${opts.map((p, i) => `<button class="chip ${i === Math.min(ui.pay, opts.length-1) ? 'on' : ''}" data-p="${i}">${esc(p[0])}</button>`).join('')}</div></div>` : ''}
   <div class="card"><h2>${opts ? '③' : '②'} 金額と日付</h2>
@@ -182,7 +223,9 @@ VIEWS.entry = () => {
   <p class="note" style="text-align:center;margin:12px 0 0">登録した分は「一覧」で確認・削除できます。<br>あとで「PCへ送る」からパソコンの決算帳に取り込みます。</p>`;
 };
 VIEWS.entry_after = () => {
-  $$('[data-t]').forEach(b => b.onclick = () => { ui.tpl = +b.dataset.t; ui.pay = 0; ui.focusAmt = true; render(true); });
+  $$('[data-t]').forEach(b => b.onclick = () => { ui.tpl = +b.dataset.t; ui.pay = 0; const o = !!curTpl().other; ui.focusAmt = !o; ui.focusOacc = o; render(true); });
+  $$('[data-oa]').forEach(b => b.onclick = () => { D.oacc = b.dataset.oa; save(); ui.focusAmt = true; render(true); });
+  if($('#bodue')) $('#bodue').onclick = () => { ui.view = 'send'; render(); };
   $$('[data-p]').forEach(b => b.onclick = () => { ui.pay = +b.dataset.p; ui.focusAmt = true; render(true); });
   $('#date').onchange = e => { ui.date = e.target.value || today(); };
   $('#btoday').onclick = () => { ui.date = today(); $('#date').value = ui.date; toast('今日の日付にしました'); };
@@ -194,9 +237,13 @@ VIEWS.entry_after = () => {
     a.closest('.card').scrollIntoView({ block:'start', behavior:'smooth' });
     setTimeout(() => { a.focus(); a.select(); }, 260);
   }
+  if(ui.focusOacc){ // 「その他」を押したら科目の選択まで送る
+    ui.focusOacc = false; const c = $('[data-oa]');
+    if(c) c.closest('.card').scrollIntoView({ block:'start', behavior:'smooth' });
+  }
 };
 function addEntry(){
-  const ts = PRESETS[D.preset].tpls, t = ts[ui.tpl], isIn = t.kind === 'in';
+  const t = curTpl(), isIn = t.kind === 'in';
   const opts = t.fix ? null : (isIn ? INS : PAYS);
   const cur = opts ? opts[Math.min(ui.pay, opts.length - 1)] : null;
   const amt = Math.round(Number(String($('#amt').value).replace(/[^0-9.]/g, '')));
@@ -214,7 +261,7 @@ function addEntry(){
 function accChoices(){
   const set = new Set();
   Object.values(PRESETS).forEach(p => p.tpls.forEach(t => { set.add(t.dr); set.add(t.cr); }));
-  PAYS.forEach(x => set.add(x[1])); INS.forEach(x => set.add(x[1]));
+  PAYS.forEach(x => set.add(x[1])); INS.forEach(x => set.add(x[1])); OTHER_ACCS.forEach(n => set.add(n));
   ['現金','普通預金','売掛金','未払金','事業主貸','事業主借','売上高','仕入高','消耗品費','通信費','車両費','旅費交通費','修繕費','租税公課','損害保険料','支払手数料','外注工賃','水道光熱費','地代家賃','雑費'].forEach(n => set.add(n));
   return [...set];
 }
@@ -425,8 +472,11 @@ VIEWS.conf = () => `
   <div class="card"><h2>業種（よく使う取引が変わります）</h2>
     <div class="chips">${Object.entries(PRESETS).map(([k, p]) => `<button class="chip ${D.preset === k ? 'on' : ''}" data-pre="${k}">${esc(p.label)}</button>`).join('')}</div>
   </div>
-  <div class="card"><h2>この画面をアプリのように使う</h2>
-    <p class="note" style="margin-top:0">Chromeの右上「⋮」→ <b>「ホーム画面に追加」</b> を押すと、アイコンから開けるようになります。<br>
+  ${iosCard()}
+  <div class="card ${STANDALONE ? 'ok' : ''}"><h2>この画面をアプリのように使う</h2>
+    <p class="note" style="margin-top:0">${STANDALONE ? '<b style="color:#14602f">✓ ホーム画面のアイコンから開いています。</b><br>'
+      : IOS ? 'Safariの共有ボタン（□に↑）→ <b>「ホーム画面に追加」</b> を押して、できたアイコンから開いてください。<br><b>Safariのまま入力した分は、アイコン側には出てきません。</b><br>'
+      : 'Chromeの右上「⋮」→ <b>「ホーム画面に追加」</b> を押すと、アイコンから開けるようになります。<br>'}
     インターネットにつながっていなくても入力できます（圏外でもOK）。</p>
   </div>
   <div class="card"><h2>📖 説明書</h2>
@@ -445,7 +495,8 @@ VIEWS.conf = () => `
   </div>
   <div class="card"><h2>状況</h2>
     <p class="note" style="margin-top:0">入力 ${D.entries.length} 件（未送信 ${unsent().length} 件）<br>
-    最後に送信済みにした日：${D.lastSent ? new Date(D.lastSent).toLocaleString('ja-JP') : 'まだありません'}</p>
+    最後に送信済みにした日：${D.lastSent ? new Date(D.lastSent).toLocaleString('ja-JP') : 'まだありません'}<br>
+    消されにくい保存：${!(navigator.storage && navigator.storage.persist) ? 'このブラウザは非対応' : ui.persist === true ? '<b style="color:#14602f">✓ 有効</b>' : ui.persist === false ? '無効（ホーム画面に追加したアイコンから使うと有効になりやすい）' : '確認中'}</p>
     <button class="sub dz" id="reset">すべての入力を消す</button>
   </div>`;
 VIEWS.conf_after = () => {
@@ -469,6 +520,11 @@ function render(keepAmt){
 $$('nav button').forEach(b => b.onclick = () => { ui.view = b.dataset.v; ui.pick = []; ui.bulk = null; ui.editId = null; render(); });
 $('#hst').onclick = () => { ui.view = 'send'; render(); }; // 上の「未送信○件」を押しても送る画面へ
 if(location.hash === '#send'){ ui.view = 'send'; history.replaceState(null, '', location.pathname + location.search); } // 説明書から戻ったとき
+/* 空き容量が減ってもChromeに消されないよう頼んでおく（ホーム画面に追加して使うと認められやすい） */
+if(navigator.storage && navigator.storage.persist){
+  navigator.storage.persisted().then(p => p || navigator.storage.persist())
+    .then(p => { ui.persist = p; if(ui.view === 'conf') render(); }).catch(() => {});
+}
 D.opens = (D.opens || 0) + 1; save(); // 開いた回数＝保存が効いているかの目印
 render();
 </script>
