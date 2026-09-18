@@ -61,6 +61,13 @@ input.amt{font-size:30px;text-align:right;font-weight:bold;letter-spacing:.03em;
 #toast.on{opacity:.95}
 .badge{display:inline-block;background:#e8f0f9;color:#0f4f96;border-radius:4px;padding:1px 7px;font-size:11.5px;margin-left:5px}
 .badge.g{background:#eaf7ee;color:#14602f}
+.selbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0f4f96;color:#fff;border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.selbar b{font-size:16px}
+.selbar button{border:0;border-radius:8px;background:#fff;color:#0f4f96;font:inherit;font-size:13.5px;font-weight:bold;padding:8px 12px}
+.selbar button.dz{color:#b52020}
+.item .ck{width:24px;height:24px;flex:none;margin-right:2px}
+.item.picked{background:#e9f3ff;border-radius:6px}
+.edit{border:2px solid #2f7fd0}
 .qsend{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0f4f96;color:#fff;border-radius:10px;padding:8px 8px 8px 14px;margin-bottom:12px}
 .qsend b{font-size:18px}
 .qsend button{border:0;border-radius:8px;background:#fff;color:#0f4f96;font:inherit;font-weight:bold;padding:10px 16px}
@@ -202,30 +209,130 @@ function addEntry(){
   render();
 }
 
+/* 科目の候補（PC版の科目名と同じ文字にすること） */
+function accChoices(){
+  const set = new Set();
+  Object.values(PRESETS).forEach(p => p.tpls.forEach(t => { set.add(t.dr); set.add(t.cr); }));
+  PAYS.forEach(x => set.add(x[1])); INS.forEach(x => set.add(x[1]));
+  ['現金','普通預金','売掛金','未払金','事業主貸','事業主借','売上高','仕入高','消耗品費','通信費','車両費','旅費交通費','修繕費','租税公課','損害保険料','支払手数料','外注工賃','水道光熱費','地代家賃','雑費'].forEach(n => set.add(n));
+  return [...set];
+}
+const picked = () => (ui.pick = ui.pick || []);
+const isPicked = id => picked().includes(id);
+function pickToggle(id){
+  const a = picked(), i = a.indexOf(id);
+  if(i < 0) a.push(id); else a.splice(i, 1);
+  render();
+}
+function pickedEntries(){ return D.entries.filter(e => picked().includes(e.id)); }
+/* 選んだ分の「払い方（相手科目）」や「科目」をまとめて変える */
+function bulkPhone(side){
+  const es = pickedEntries();
+  if(!es.length) return;
+  ui.bulk = { side, ids:es.map(e => e.id) };
+  render();
+}
+function bulkApply(name){
+  const b = ui.bulk; if(!b) return;
+  let n = 0;
+  D.entries.filter(e => b.ids.includes(e.id)).forEach(e => {
+    const side = b.side === 'pay' ? (e.kind === 'in' ? 'dr' : 'cr') : (e.kind === 'in' ? 'cr' : 'dr');
+    const other = side === 'dr' ? e.cr : e.dr;
+    if(other === name || e[side] === name) return; // 同じ科目どうしにはしない
+    e[side] = name; n++;
+  });
+  ui.bulk = null; ui.pick = []; save(); render();
+  toast(`${n}件を「${name}」に変えました`);
+}
+function bulkDelPhone(){
+  const es = pickedEntries();
+  if(!es.length || !confirm(`選んだ ${es.length}件 を削除します。よろしいですか？`)) return;
+  D.entries = D.entries.filter(e => !picked().includes(e.id));
+  const n = es.length; ui.pick = []; save(); render(); toast(`${n}件を削除しました`);
+}
+/* 1件だけ直す画面 */
+VIEWS.edit = () => {
+  const e = D.entries.find(x => x.id === ui.editId);
+  if(!e){ ui.view = 'list'; return VIEWS.list(); }
+  const isIn = e.kind === 'in';
+  const chips = (cur, side) => accChoices().map(n => `<button class="chip ${n === cur ? 'on' : ''}" data-ac="${side}|${esc(n)}">${esc(n)}</button>`).join('');
+  return `
+  <div class="card edit"><h2>この取引を直す</h2>
+    <label class="l">金額（円）</label><input class="amt" id="eAmt" type="tel" inputmode="numeric" value="${e.amt}">
+    <div class="row2" style="margin-top:10px">
+      <div><label class="l">日付</label><input type="date" id="eDate" value="${esc(e.date)}"></div>
+      <div><label class="l">種類</label><input value="${isIn ? '入金' : '支払'}" readonly></div>
+    </div>
+    <div style="margin-top:10px"><label class="l">メモ</label><input id="eMemo" value="${esc(e.memo || '')}"></div>
+  </div>
+  <div class="card"><h2>${isIn ? '何の入金か（科目）' : '何に使ったか（科目）'}</h2>
+    <div class="chips">${chips(isIn ? e.cr : e.dr, 'kind')}</div></div>
+  <div class="card"><h2>${isIn ? 'どこに入ったか' : 'どうやって払ったか'}</h2>
+    <div class="chips">${chips(isIn ? e.dr : e.cr, 'pay')}</div></div>
+  <div class="prev">いまの内容　→　<b>${esc(e.dr)}</b> ／ <b>${esc(e.cr)}</b>　${fmt(e.amt)}円</div>
+  <button class="big" id="eSave">この内容で保存する</button>
+  <button class="sub dz" id="eDel">この1件を削除する</button>
+  <button class="sub" id="eCancel">やめる（一覧に戻る）</button>`;
+};
+VIEWS.edit_after = () => {
+  const e = D.entries.find(x => x.id === ui.editId); if(!e) return;
+  $$('[data-ac]').forEach(b => b.onclick = () => {
+    const [w, name] = b.dataset.ac.split('|');
+    const side = w === 'pay' ? (e.kind === 'in' ? 'dr' : 'cr') : (e.kind === 'in' ? 'cr' : 'dr');
+    const other = side === 'dr' ? e.cr : e.dr;
+    if(other === name) return toast('借方と貸方に同じ科目は使えません', 1);
+    e[side] = name; save(); render();
+  });
+  $('#eSave').onclick = () => {
+    const amt = Math.round(Number(String($('#eAmt').value).replace(/[^0-9.]/g, '')));
+    if(!(amt > 0)) return toast('金額を入れてください', 1);
+    e.amt = amt; e.date = $('#eDate').value || e.date; e.memo = $('#eMemo').value.trim();
+    save(); ui.editId = null; ui.view = 'list'; render(); toast('直しました');
+  };
+  $('#eDel').onclick = () => {
+    if(!confirm('この1件を削除しますか？')) return;
+    D.entries = D.entries.filter(x => x.id !== e.id); ui.editId = null; ui.view = 'list'; save(); render(); toast('削除しました');
+  };
+  $('#eCancel').onclick = () => { ui.editId = null; ui.view = 'list'; render(); };
+};
 VIEWS.list = () => {
   const es = [...D.entries].sort((a, b) => b.date === a.date ? (b.at || '').localeCompare(a.at || '') : b.date.localeCompare(a.date));
   const m = today().slice(0, 7);
   const cur = es.filter(e => e.date.slice(0, 7) === m);
   const inc = cur.filter(e => e.kind === 'in').reduce((s, e) => s + e.amt, 0);
   const out = cur.filter(e => e.kind !== 'in').reduce((s, e) => s + e.amt, 0);
+  const np = picked().length;
+  const bulkCard = ui.bulk ? `<div class="card edit"><h2>${ui.bulk.ids.length}件の${ui.bulk.side === 'pay' ? '「払い方・入った先」' : '「科目」'}を、どれに変えますか？</h2>
+    <div class="chips">${accChoices().map(n => `<button class="chip" data-bk="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+    <button class="sub" id="bkCancel">やめる</button></div>` : '';
   return `
+  ${np ? `<div class="selbar"><b>${np}件を選択中</b>
+    <button data-bulk="pay">払い方を変える</button>
+    <button data-bulk="kind">科目を変える</button>
+    <button class="dz" id="bkDel">削除</button>
+    <button id="bkClear">選択をやめる</button></div>` : ''}
+  ${bulkCard}
   <div class="mtot"><span>今月（${+m.slice(5)}月）の入力</span><span>入金 <b style="color:#1a7a3c">${fmt(inc)}</b> ／ 支払 <b>${fmt(out)}</b> 円</span></div>
   <div class="card">${es.length ? es.map(e => `
-    <div class="item ${e.sent ? 'sent' : ''}">
+    <div class="item ${e.sent ? 'sent' : ''} ${isPicked(e.id) ? 'picked' : ''}" data-row="${e.id}">
+      <input type="checkbox" class="ck" data-pick="${e.id}" ${isPicked(e.id) ? 'checked' : ''}>
       <span class="d">${md(e.date)}</span>
       <span class="m"><b>${esc(e.kind === 'in' ? e.cr : e.dr)}</b>${e.sent ? '<span class="badge g">送信済</span>' : ''}<small>${esc(e.memo || '')}${e.memo ? '　' : ''}${esc(e.kind === 'in' ? e.dr : e.cr)}</small></span>
       <span class="a ${e.kind === 'in' ? 'in' : ''}">${e.kind === 'in' ? '+' : '−'}${fmt(e.amt)}</span>
-      <button class="x" data-del="${e.id}">×</button>
     </div>`).join('') : '<div class="empty">まだ入力がありません</div>'}
   </div>
-  ${es.length ? `<p class="note">合計 ${es.length} 件（未送信 ${unsent().length} 件）。<br>× で1件削除できます。送信済みの分をまとめて消すときは「PCへ送る」画面から。</p>` : ''}`;
+  ${es.length ? `<p class="note">合計 ${es.length} 件（未送信 ${unsent().length} 件）。<br>
+  <b>行をタップすると1件だけ直せます。</b>左のチェックで選ぶと、まとめて直せます（現金とカードの取り違えなど）。<br>
+  送信済みの分をまとめて消すときは「PCへ送る」画面から。</p>` : ''}`;
 };
 VIEWS.list_after = () => {
-  $$('[data-del]').forEach(b => b.onclick = () => {
-    const e = D.entries.find(x => x.id === b.dataset.del); if(!e) return;
-    if(!confirm(`${md(e.date)}　${e.memo || (e.kind === 'in' ? e.cr : e.dr)}　${fmt(e.amt)}円\nこの1件を削除しますか？`)) return;
-    D.entries = D.entries.filter(x => x.id !== b.dataset.del); save(); render(); toast('削除しました');
-  });
+  $$('[data-pick]').forEach(b => b.onclick = e => { e.stopPropagation(); pickToggle(b.dataset.pick); });
+  $$('[data-row]').forEach(r => r.onclick = () => { ui.editId = r.dataset.row; ui.view = 'edit'; render(); });
+  $$('[data-bulk]').forEach(b => b.onclick = () => bulkPhone(b.dataset.bulk));
+  $$('[data-bk]').forEach(b => b.onclick = () => bulkApply(b.dataset.bk));
+  if($('#bkDel')) $('#bkDel').onclick = bulkDelPhone;
+  if($('#bkClear')) $('#bkClear').onclick = () => { ui.pick = []; ui.bulk = null; render(); };
+  if($('#bkCancel')) $('#bkCancel').onclick = () => { ui.bulk = null; render(); };
 };
 
 /* パソコンへ渡すCSV（1行目＝見出し。Excelで開いても文字化けしないよう先頭にBOMを付ける） */
@@ -348,7 +455,7 @@ function render(keepAmt){
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === ui.view));
   $('#main').scrollTop = 0;
 }
-$$('nav button').forEach(b => b.onclick = () => { ui.view = b.dataset.v; render(); });
+$$('nav button').forEach(b => b.onclick = () => { ui.view = b.dataset.v; ui.pick = []; ui.bulk = null; ui.editId = null; render(); });
 $('#hst').onclick = () => { ui.view = 'send'; render(); }; // 上の「未送信○件」を押しても送る画面へ
 D.opens = (D.opens || 0) + 1; save(); // 開いた回数＝保存が効いているかの目印
 render();
