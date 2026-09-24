@@ -508,7 +508,7 @@ function render(keepAmt){
   const amt = keepAmt && $('#amt') ? $('#amt').value : null;
   const warn = canSave ? '' : `<div class="card" style="background:#fdf4f3;border-color:#d9a2a2">
     <h2 style="color:#b52020">⚠ この開き方では入力が保存できません</h2>
-    <p class="note" style="margin:0">いま入力しても、閉じると消えてしまいます。<b>開き方を変えてください</b>（説明書の16章を見てください）。</p></div>`;
+    <p class="note" style="margin:0">いま入力しても、閉じると消えてしまいます。<b>開き方を変えてください</b>（スマホ取り込み説明書の2章を見てください）。</p></div>`;
   $('#main').innerHTML = warn + VIEWS[ui.view]();
   (VIEWS[ui.view + '_after'] || (() => {}))();
   if(amt !== null && $('#amt')) $('#amt').value = amt;
