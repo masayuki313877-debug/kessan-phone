@@ -106,6 +106,8 @@ const md = s => { const p = s.split('-'); return +p[1] + '/' + +p[2]; };
 const PRESETS = {
   delivery: { label:'フードデリバリー', tpls:[
     { n:'報酬 入金', dr:'普通預金', cr:'売上高', memo:'配達報酬', kind:'in' },
+    { n:'月末〆 売上', dr:'売掛金', cr:'売上高', memo:'月末締め 売上', kind:'in', fix:1 },
+    { n:'先月分 入金', dr:'普通預金', cr:'売掛金', memo:'前月分 入金', kind:'in', fix:1 },
     { n:'ガソリン', dr:'車両費', cr:'現金', memo:'ガソリン' },
     { n:'駐輪・駐車場', dr:'車両費', cr:'現金', memo:'駐輪場' },
     { n:'修理・オイル', dr:'修繕費', cr:'現金', memo:'原付 修理' },
