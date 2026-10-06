@@ -27,6 +27,8 @@ nav button.on{color:#0f4f96;font-weight:bold;box-shadow:inset 0 3px 0 #2f7fd0}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{border:1px solid #b9c8dc;background:#f7fbff;border-radius:17px;padding:8px 13px;font-size:14px;line-height:1.2}
 .chip.on{background:#2f7fd0;border-color:#2f7fd0;color:#fff;font-weight:bold}
+.ogrp{margin-bottom:10px}
+.oglbl{font-size:12px;color:#5a6b7d;font-weight:bold;margin:0 0 5px}
 .tpl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tpl button{border:1px solid #b9c8dc;background:#fff;border-radius:9px;padding:12px 8px;font:inherit;font-size:14.5px;line-height:1.25;text-align:left;min-height:52px}
 .tpl button.on{border-color:#2f7fd0;background:#e9f3ff;box-shadow:0 0 0 2px #bcd9f7}
@@ -138,8 +140,22 @@ const PRESETS = {
 /* 支払方法（経費のとき貸方を差し替え／入金のとき借方を差し替え） */
 const PAYS = [ ['現金','現金'], ['口座','普通預金'], ['カード','未払金'], ['個人のお金','事業主借'] ];
 const INS  = [ ['口座','普通預金'], ['現金','現金'], ['未入金','売掛金'] ];
-/* 「その他」で選べる経費の科目（PC版の科目名と同じ文字。PCに無い科目は取り込み時に自動追加できる） */
-const OTHER_ACCS = ['消耗品費','車両費','旅費交通費','通信費','支払手数料','修繕費','荷造運賃','広告宣伝費','接待交際費','水道光熱費','地代家賃','損害保険料','租税公課','外注工賃','仕入高','福利厚生費','雑費'];
+/* 「その他」で選べる一般的な勘定科目（PC版の科目名と同じ文字。PCに無い科目は取り込み時に自動追加できる）
+   kind:'out'=お金を払った（科目=借方／払い方を選ぶ） kind:'in'=お金が入った（科目=貸方／入った先を選ぶ） */
+const OTHER_GROUPS = [
+  { g:'経費（お金を払った）', kind:'out', items:[
+    ['消耗品費','消耗品費'],['車両費','車両費'],['旅費交通費','旅費交通費'],['通信費','通信費'],['水道光熱費','水道光熱費'],
+    ['地代家賃','地代家賃'],['損害保険料','損害保険料'],['修繕費','修繕費'],['租税公課','租税公課'],['接待交際費','接待交際費'],
+    ['広告宣伝費','広告宣伝費'],['荷造運賃','荷造運賃'],['福利厚生費','福利厚生費'],['外注工賃','外注工賃'],['支払手数料','支払手数料'],
+    ['仕入・材料','仕入高'],['利子割引料','利子割引料'],['雑費','雑費'] ] },
+  { g:'売上・収入（お金が入った）', kind:'in', items:[
+    ['売上','売上高'],['雑収入','雑収入'] ] },
+  { g:'事業とは別のお金', kind:'mix', items:[
+    ['生活費・私用の支払（事業主貸）','事業主貸','out'],['税金・国保・年金を払った（事業主貸）','事業主貸','out'],
+    ['元手・個人のお金を入れた（事業主借）','事業主借','in'],['利息が付いた（事業主借）','事業主借','in'] ] },
+];
+/* 全科目のフラット一覧（1件修正・まとめて変更のチップ用） */
+const OTHER_ACCS = [...new Set(OTHER_GROUPS.flatMap(g => g.items.map(it => it[1])))];
 
 /* ---- データ ---- */
 let D = load();
@@ -159,10 +175,15 @@ function toast(m, warn){ const t = $('#toast'); t.textContent = m; t.style.backg
 
 /* ---- 入力画面の状態 ---- */
 let ui = { view:'entry', tpl:0, pay:0, date:today() };
-/* いま選んでいる取引（ボタンの最後の「その他」は、科目を自分で選ぶ） */
+/* いま選んでいる取引（ボタンの最後の「その他」は、科目を自分で選ぶ）
+   D.oacc=選んだ科目、D.okind='in'|'out'。入金なら科目は貸方、支払なら借方 */
 function curTpl(){
   const ts = PRESETS[D.preset].tpls;
-  if(ui.tpl >= ts.length) return { n:'その他', dr: D.oacc || '消耗品費', cr:'現金', memo:'', other:true };
+  if(ui.tpl >= ts.length){
+    const acc = D.oacc || '消耗品費', k = D.okind === 'in' ? 'in' : 'out';
+    return k === 'in' ? { n:'その他', cr: acc, kind:'in', memo:'', other:true }
+                      : { n:'その他', dr: acc, memo:'', other:true };
+  }
   return ts[ui.tpl];
 }
 /* iPad・iPhone：Safariで開いた画面とホーム画面のアイコンでは保存場所が別（Safariのままだと消されることもある） */
@@ -204,8 +225,11 @@ VIEWS.entry = () => {
   <div class="card"><h2>① 何の取引ですか？</h2>
     <div class="tpl">${ts.map((x, i) => `<button data-t="${i}" class="${i === ui.tpl ? 'on' : ''}">${esc(x.n)}<small>${esc(x.dr)} / ${esc(x.cr)}</small></button>`).join('')}<button data-t="${ts.length}" class="${t.other ? 'on' : ''}">その他<small>科目を自分で選ぶ</small></button></div>
   </div>
-  ${t.other ? `<div class="card"><h2>何に使いましたか？（科目）</h2>
-    <div class="chips">${OTHER_ACCS.map(a => `<button class="chip ${a === t.dr ? 'on' : ''}" data-oa="${esc(a)}">${esc(a)}</button>`).join('')}</div>
+  ${t.other ? `<div class="card"><h2>勘定科目を選ぶ</h2>
+    ${OTHER_GROUPS.map(g => `<div class="ogrp"><div class="oglbl">${esc(g.g)}</div><div class="chips">${g.items.map(it => {
+      const acc = it[1], kind = it[2] || g.kind, on = acc === D.oacc && (kind === 'in' ? 'in' : 'out') === (D.okind === 'in' ? 'in' : 'out');
+      return `<button class="chip ${on ? 'on' : ''}" data-oa="${esc(acc)}" data-ok="${kind}">${esc(it[0])}</button>`;
+    }).join('')}</div></div>`).join('')}
     <p class="note" style="margin:8px 0 0">迷ったら、10万円未満の物は「消耗品費」、どれにも当てはまらなければ「雑費」。<br>
     <b>10万円以上の物（バイク・パソコンなど）</b>はここではなく、パソコンの決算帳の「固定資産台帳」に入れてください。</p></div>` : ''}
   ${opts ? `<div class="card"><h2>② ${isIn ? 'どこに入りましたか？' : 'どうやって払いましたか？'}</h2>
@@ -226,7 +250,7 @@ VIEWS.entry = () => {
 };
 VIEWS.entry_after = () => {
   $$('[data-t]').forEach(b => b.onclick = () => { ui.tpl = +b.dataset.t; ui.pay = 0; const o = !!curTpl().other; ui.focusAmt = !o; ui.focusOacc = o; render(true); });
-  $$('[data-oa]').forEach(b => b.onclick = () => { D.oacc = b.dataset.oa; save(); ui.focusAmt = true; render(true); });
+  $$('[data-oa]').forEach(b => b.onclick = () => { D.oacc = b.dataset.oa; D.okind = b.dataset.ok === 'in' ? 'in' : 'out'; ui.pay = 0; save(); ui.focusAmt = true; render(true); });
   if($('#bodue')) $('#bodue').onclick = () => { ui.view = 'send'; render(); };
   $$('[data-p]').forEach(b => b.onclick = () => { ui.pay = +b.dataset.p; ui.focusAmt = true; render(true); });
   $('#date').onchange = e => { ui.date = e.target.value || today(); };
@@ -264,7 +288,8 @@ function accChoices(){
   const set = new Set();
   Object.values(PRESETS).forEach(p => p.tpls.forEach(t => { set.add(t.dr); set.add(t.cr); }));
   PAYS.forEach(x => set.add(x[1])); INS.forEach(x => set.add(x[1])); OTHER_ACCS.forEach(n => set.add(n));
-  ['現金','普通預金','売掛金','未払金','事業主貸','事業主借','売上高','仕入高','消耗品費','通信費','車両費','旅費交通費','修繕費','租税公課','損害保険料','支払手数料','外注工賃','水道光熱費','地代家賃','雑費'].forEach(n => set.add(n));
+  OTHER_ACCS.forEach(n => set.add(n));
+  ['現金','普通預金','売掛金','未払金','事業主貸','事業主借','売上高','雑収入','仕入高','消耗品費','通信費','車両費','旅費交通費','修繕費','租税公課','損害保険料','支払手数料','外注工賃','水道光熱費','地代家賃','利子割引料','雑費'].forEach(n => set.add(n));
   return [...set];
 }
 const picked = () => (ui.pick = ui.pick || []);
